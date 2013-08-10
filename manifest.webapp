@@ -1,0 +1,11 @@
+{
+  "name": "Git-Browser",
+  "type": "privileged",
+  "description": "Browse Git Repos offline.",
+  "launch_path": "/mozapp.html",
+  "permissions": {
+    "tcp-socket": {
+      "description": "Required for communicate with remote git servers"
+    }
+  }
+}
