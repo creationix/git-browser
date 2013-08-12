@@ -1,34 +1,32 @@
-chrome.socket.create("tcp", {}, function (createInfo) {
-  var socketId = createInfo.socketId;
-  chrome.socket.connect(socketId, 'github.com', 9418, function (result) {
-    console.log({result:result});
-    send("git-upload-pack /creationix/conquest.git\0host=github.com\0");
-    chrome.socket.read(socketId, onRead);
-  });
 
-  function send(string) {
-    var line;
-    if (string === null) {
-      line = toBuffer("0000");
-    }
-    else {
-      line = pktLine(string);
-    }
-    log("->", toString(line));
-    chrome.socket.write(socketId, line, onWrite);
-  }
-
-  function onWrite(writeInfo) {
-    //log("onWrite", writeInfo);
-  }
-
-  function onRead(readInfo) {
-    //log("onRead", readInfo.resultCode);
-    log("<-", toString(readInfo.data));
-    chrome.socket.read(socketId, onRead);
-  }
-
+var socket = navigator.mozTCPSocket.open('github.com', 9418, {
+  binaryType: "arraybuffer"
 });
+
+socket.onopen = function () {
+  send("git-upload-pack /creationix/conquest.git\0host=github.com\0");
+};
+
+function send(string) {
+  var line;
+  if (string === null) {
+    line = toBuffer("0000");
+  }
+  else {
+    line = pktLine(string);
+  }
+  log("->", toString(line));
+  socket.send(line);
+}
+
+socket.ondata = function (evt) {
+  log("<-", toString(evt.data));
+  send(null);
+};
+
+socket.onerror = function (err) {
+  throw err;
+};
 
 function pktLine(line) {
   var length = line.length + 4;
@@ -71,3 +69,4 @@ function log(label, value) {
   document.body.appendChild(p);
   console.log(label, value);
 }
+

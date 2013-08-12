@@ -6,7 +6,7 @@
   "description": "Browse Git Repos offline.",
   "app": {
     "background": {
-      "scripts": ["background.js"]
+      "scripts": ["chromeapp/background.js"]
     }
   },
   "permissions": [

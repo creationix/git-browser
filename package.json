@@ -1,0 +1,25 @@
+{
+  "name": "git-browser",
+  "version": "0.0.0",
+  "description": "A git browser app for chrome and firefox",
+  "private": true,
+  "dependencies": {
+    "base64-js": "~0.0.2",
+    "bops": "~0.0.6",
+    "git-apply-delta": "~0.0.7",
+    "js-git": "~0.2.3",
+    "chrome-app-module-loader": "~0.0.3",
+    "push-to-pull": "~0.1.0",
+    "to-utf8": "~0.0.1",
+    "varint": "~0.0.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/creationix/git-browser.git"
+  },
+  "author": "Tim Caswell <tim@creationix.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/creationix/git-browser/issues"
+  }
+}
