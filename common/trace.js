@@ -1,5 +1,6 @@
 if (true) {
 
+  var log = require('domlog');
   var messages = {
     request: "\u21A0",
     response: "\u219E",
@@ -18,13 +19,13 @@ if (true) {
     var message = messages[type];
     if (!message) return stream;
     if (!stream) {
-      return console.log(message, item);
+      return log(message, item);
     }
     return { read: traceRead, abort: stream.abort };
     function traceRead(callback) {
       stream.read(function (err, item) {
         if (err) return callback(err);
-        console.log(message, item);
+        log(message, item);
         callback(null, item);
       });
     }

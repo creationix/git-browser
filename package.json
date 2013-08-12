@@ -11,7 +11,9 @@
     "chrome-app-module-loader": "~0.0.3",
     "push-to-pull": "~0.1.0",
     "to-utf8": "~0.0.1",
-    "varint": "~0.0.3"
+    "varint": "~0.0.3",
+    "domlog": "0.0.7",
+    "dombuilder": "~0.1.2"
   },
   "repository": {
     "type": "git",
