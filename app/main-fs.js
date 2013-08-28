@@ -15,7 +15,7 @@ var tcpProto = require('js-git/protocols/tcp.js');
 var serial = require('js-git/helpers/serial.js');
 var parallel = require('js-git/helpers/parallel.js');
 var parallelData = require('js-git/helpers/parallel-data.js');
-var webToGitFs = require('../chromeapp/web-to-git-fs.js');
+var gitWebfs = require('./git-webfs.js');
 var platform = require('js-git/lib/platform.js');
 
 var opts = {
@@ -24,36 +24,38 @@ var opts = {
   pathname: "/creationix/conquest.git"
 };
 
+window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+window.requestFileSystem(PERSISTENT, 0, onFs, function (err) {
+  throw new Error("Unable to get filesystem: " + err);
+});
+
 var config = {
   includeTag: true,
   onProgress: log,
   onError: log
 };
 
-var repo = repoify(fsDb("conquest.git", true));
-var connection = tcpProto(opts);
-
-serial(
-  platform.require('fs').init(),
-  function (callback) {
-    parallelData({
-      init: repo.init(),
-      pack: connection.fetch(config),
-    }, wrap(function (err, result) {
+function onFs(webfs) {
+  var repo = repoify(fsDb(gitWebfs(webfs.root), true));
+  var connection = tcpProto(opts);
+  parallelData({
+    init: repo.init(),
+    pack: connection.fetch(config),
+  }, wrap(function (err, result) {
+    if (err) throw err;
+    serial(
+      parallel(
+        repo.importRefs(result.pack.refs),
+        repo.unpack(result.pack, config)
+      ),
+      connection.close()
+    )(function (err) {
       if (err) throw err;
-      serial(
-        parallel(
-          repo.importRefs(result.pack.refs),
-          repo.unpack(result.pack, config)
-        ),
-        connection.close()
-      )(callback);
-    }))
-  }
-)(function (err) {
-  if (err) throw err;
-  log("DONE");
-});
+      log("DONE");
+    });
+  }));
+}
+
 
 // Wrap a function in one that redirects exceptions.
 // Use for all event-source handlers.

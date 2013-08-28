@@ -1,7 +1,6 @@
 
-module.exports = function (fs) {
-  var root = fs && fs.root;
-  chroot.setRoot = function (r) { root = r; };
+// Given a directory entry from the HTML5 FileSystem interface, return a git-fs instance.
+module.exports = function (root) {
   chroot.read = read;
   chroot.read = read;
   chroot.write = write;
