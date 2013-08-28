@@ -27,7 +27,7 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction;
 window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
 
-var request = window.indexDb.open("gitdb");
+var request = window.indexedDB.open("gitdb");
 request.onsuccess = onDb;
 request.onerror = function (evt) {
   throw new Error("Unable to get database: " + request.errorCode);
@@ -40,7 +40,7 @@ var config = {
 };
 
 function onDb(idb) {
-  var repo = repoify(gitIdb(idb), true));
+  var repo = repoify(gitIdb(idb), true);
   var connection = tcpProto(opts);
   parallelData({
     init: repo.init(),

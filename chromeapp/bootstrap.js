@@ -7,4 +7,4 @@ require('js-git/lib/platform.js')({
   trace: require('../common/trace.js'),
   agent: "jsgit/" + require('js-git/package.json').version,
 });
-require('../app/main-fs.js');
+require('../app/main-db.js');
