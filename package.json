@@ -5,9 +5,7 @@
   "private": true,
   "dependencies": {
     "base64-js": "~0.0.2",
-    "bops": "~0.0.6",
-    "git-apply-delta": "~0.0.7",
-    "js-git": "~0.2.5",
+    "js-git": "~0.3.0",
     "chrome-app-module-loader": "~0.0.3",
     "push-to-pull": "~0.1.0",
     "to-utf8": "~0.0.1",
