@@ -11,7 +11,7 @@ log.setup({
 // Load the libraries
 var fsDb = require('js-git/lib/fs-db.js');
 var repoify = require('js-git/lib/repo.js');
-var autoProto = require('js-git/protocols/auto.js');
+var tcpProto = require('js-git/protocols/tcp.js');
 var serial = require('js-git/helpers/serial.js');
 var parallel = require('js-git/helpers/parallel.js');
 var parallelData = require('js-git/helpers/parallel-data.js');
@@ -31,7 +31,7 @@ var config = {
 };
 
 var repo = repoify(fsDb("conquest.git", true));
-var connection = autoProto(opts);
+var connection = tcpProto(opts);
 
 serial(
   platform.require('fs').init(),
@@ -52,7 +52,7 @@ serial(
   }
 )(function (err) {
   if (err) throw err;
-  console.log("DONE");
+  log("DONE");
 });
 
 // Wrap a function in one that redirects exceptions.
