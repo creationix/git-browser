@@ -4,6 +4,6 @@ require('js-git/lib/platform.js')({
   inflate: require('../common/inflate.js'),
   deflate: require('../common/deflate.js'),
   trace: require('../common/trace.js'),
-  agent: "jsgit/0.2.4",
+  agent: "jsgit/0.2.5",
 });
 require('../app/main.js');
