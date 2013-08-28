@@ -1,7 +1,7 @@
 
 module.exports = function (fs) {
-  var root = fs.root;
-
+  var root = fs && fs.root;
+  chroot.setRoot = function (r) { root = r; };
   chroot.read = read;
   chroot.read = read;
   chroot.write = write;
