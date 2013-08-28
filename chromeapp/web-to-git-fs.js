@@ -188,25 +188,42 @@ function toArray(list) {
 
 function wrapCallback(callback) {
   return function (err) {
-    callback(new Error(formatError(err)));
+    callback(formatError(err));
   };
 }
 
-function formatError(err) {
-  switch (err.code) {
+function formatError(e) {
+  var message;
+  var code;
+  switch (e.code) {
     case FileError.QUOTA_EXCEEDED_ERR:
-           return 'QUOTA_EXCEEDED_ERR';
+      message = 'QUOTA_EXCEEDED_ERR';
+      code = "EQUOTA";
+      break;
     case FileError.NOT_FOUND_ERR:
-           return 'NOT_FOUND_ERR';
+      message = 'NOT_FOUND_ERR';
+      code = "ENOENT";
+      break;
     case FileError.SECURITY_ERR:
-           return 'SECURITY_ERR';
+      message = 'SECURITY_ERR';
+      code = "ESECURITY";
+      break;
     case FileError.INVALID_MODIFICATION_ERR:
-           return 'INVALID_MODIFICATION_ERR';
+      message = 'INVALID_MODIFICATION_ERR';
+      code = "EINVLDMOD";
+      break;
     case FileError.INVALID_STATE_ERR:
-           return 'INVALID_STATE_ERR';
+      message = 'INVALID_STATE_ERR';
+      code = "EINVLDSTATE";
+      break;
+    default:
+      message = "Unknown Error";
+      code = "EUNKNOWN";
+      break;
   };
-  return 'Unknown Error';
-
+  var err = new Error(message);
+  err.code = code;
+  return err;
 }
 
 function dirname(path) {
