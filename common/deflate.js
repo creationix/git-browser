@@ -7,7 +7,7 @@ function deflate(buffer, callback) {
   if (typeof buffer === "string") {
     buffer = stringToByteArray(buffer);
     }
-  var deflate = new Deflate(buffer);
-  var compressed = deflate.compress();
+  var deflater = new Deflate(buffer);
+  var compressed = deflater.compress();
   callback(null, compressed);
 }
