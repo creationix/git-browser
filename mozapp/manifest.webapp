@@ -2,10 +2,17 @@
   "name": "Git-Browser",
   "type": "privileged",
   "description": "Browse Git Repos offline.",
-  "launch_path": "/mozapp/index.html",
+  "launch_path": "/index.html",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "128": "icons/icon-128.png",
+    "256": "icons/icon-256.png",
+    "512": "icons/icon-512.png"
+  },
   "permissions": {
     "tcp-socket": {
       "description": "Required for communicate with remote git servers"
-    }
+    },
+    "storage": true
   }
 }
