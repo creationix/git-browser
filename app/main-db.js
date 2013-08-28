@@ -7,6 +7,7 @@ log.setup({
   height: "auto",
   background: "#222"
 });
+log("IndexDB Test");
 
 // Load the libraries
 var repoify = require('js-git/lib/repo.js');

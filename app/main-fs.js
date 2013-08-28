@@ -7,6 +7,7 @@ log.setup({
   height: "auto",
   background: "#222"
 });
+log("FileSystem Test");
 
 // Load the libraries
 var fsDb = require('js-git/lib/fs-db.js');
