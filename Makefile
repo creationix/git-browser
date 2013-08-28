@@ -1,6 +1,11 @@
 CHROME=build/chromeapp
+CHROME_ZIP=build/git-browser-chrome.zip
 
-all: chrome
+all: chrome zip
+
+zip: chrome
+	rm -f ${CHROME_ZIP}
+	zip -o -r ${CHROME_ZIP} ${CHROME}
 
 chrome: ${CHROME} ${CHROME}/app.js ${CHROME}/manifest.json ${CHROME}/background.js ${CHROME}/index.html ${CHROME}/icons
 
@@ -8,7 +13,7 @@ ${CHROME}:
 	mkdir -p ${CHROME}
 
 ${CHROME}/app.js: .FORCE
-	node utils/find-deps.js chromeapp/bootstrap.js | uglifyjs -c -m > ${CHROME}/app.js
+	node utils/find-deps.js chromeapp/bootstrap.js > ${CHROME}/app.js
 
 ${CHROME}/manifest.json: manifest.json
 	sed manifest.json -e 's/chromeapp\/background\.js/background.js/' > ${CHROME}/manifest.json
