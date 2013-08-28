@@ -22,6 +22,7 @@ function add(path) {
   var base = dirname(path);
   var code = fs.readFileSync(path, "utf8");
   var adjust = 0;
+  modules[path] = undefined;
   mine(code).forEach(function (match) {
     var name = match.name;
     var oldLen = name.length;
@@ -80,12 +81,12 @@ if (process.argv[1] === __filename) {
   for (var i = 2; i < process.argv.length; i++) {
     codes.push("require(" + JSON.stringify(process.argv[i]) + ");");
   }
-  code = "(function () {" + indent(codes.join("\n\n")) + "}());";
+  code = "(function (realRequire) {" + indent(codes.join("\n\n")) + "}(typeof require === 'function' && require));";
   console.log(code);
 }
 
 function wrap(path, code) {
-  return "definitions[" + JSON.stringify(path) + "] =function (module, exports) {" + indent(code) + "};";
+  return "definitions[" + JSON.stringify(path) + "] = function (module, exports) {" + indent(code) + "};";
 }
 
 function indent(code) {
@@ -93,8 +94,9 @@ function indent(code) {
   return "\n  " + code.split("\n").join("\n  ").trim() + "\n";
 }
 
-function $require(name, body) {
+function $require(name) {
   if (name in modules) return modules[name];
+  if (!(name in definitions)) return realRequire(name);
   var exports = {};
   var module = {exports:exports};
   modules[name] = module.exports;
