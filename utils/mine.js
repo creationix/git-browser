@@ -7,6 +7,7 @@ function mine(js) {
   var ident;
   var quote;
   var name;
+  var start;
 
   var isIdent = /[a-z0-9_.]/i;
   var isWhitespace = /[ \r\n\t]/;
@@ -43,6 +44,7 @@ function mine(js) {
     if (char === "'" || char === '"') {
       quote = char;
       name = "";
+      start = i + 1;
       return $name;
     }
     return $start(char);
@@ -61,7 +63,7 @@ function mine(js) {
     if (char === ")" || char === ',') {
       names.push({
         name: name,
-        offset: i
+        offset: start
       });
     }
     name = undefined;

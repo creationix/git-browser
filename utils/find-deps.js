@@ -26,10 +26,11 @@ function add(path) {
     var name = match.name;
     var oldLen = name.length;
     var newPath = baseResolve(base, name);
-    var newLen = newPath.length;
     var offset = adjust + match.offset;
+    code = code.substr(0, offset) + newPath + code.substr(offset + oldLen);
+    adjust += newPath.length - oldLen;
   });
-  modules[path] = new Buffer(code);
+  modules[path] = code;
   return path;
 }
 
@@ -63,4 +64,40 @@ function localResolve(path) {
     return add(indexPath);
   }
   return false;
+}
+
+// Launched as CLI tool.
+if (process.argv[1] === __filename) {
+  for (var i = 2; i < process.argv.length; i++) {
+    add(process.argv[i]);
+  }
+  var modules = flush();
+  var codes = Object.keys(modules).map(function (name) {
+    return wrap(name, modules[name]);
+  });
+  codes.unshift("var modules = {};\nvar definitions = {};");
+  codes.push($require.toString().replace('$require', 'require'));
+  for (var i = 2; i < process.argv.length; i++) {
+    codes.push("require(" + JSON.stringify(process.argv[i]) + ");");
+  }
+  code = "(function () {" + indent(codes.join("\n\n")) + "}());";
+  console.log(code);
+}
+
+function wrap(path, code) {
+  return "definitions[" + JSON.stringify(path) + "] =function (module, exports) {" + indent(code) + "};";
+}
+
+function indent(code) {
+  if (!code) return "";
+  return "\n  " + code.split("\n").join("\n  ").trim() + "\n";
+}
+
+function $require(name, body) {
+  if (name in modules) return modules[name];
+  var exports = {};
+  var module = {exports:exports};
+  modules[name] = module.exports;
+  definitions[name](module, exports);
+  return modules[name] = module.exports;
 }
