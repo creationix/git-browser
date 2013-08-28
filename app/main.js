@@ -46,16 +46,17 @@ function onFs(webfs) {
   window.repo = repo;
   window.connection = connection;
 
-  connection.discover(wrap(function (err, refs) {
-    if (err) throw err;
-    Object.keys(refs).forEach(function (ref) {
-      log(refs[ref] + "\t" + ref);
-    });
-    connection.close(wrap(function (err) {
-      if (err) throw err;
-      log("DONE");
-    }));
-  }));
+
+  // connection.discover(wrap(function (err, refs) {
+  //   if (err) throw err;
+  //   Object.keys(refs).forEach(function (ref) {
+  //     log(refs[ref] + "\t" + ref);
+  //   });
+  //   connection.close(wrap(function (err) {
+  //     if (err) throw err;
+  //     log("DONE");
+  //   }));
+  // }));
 
   parallelData({
     init: repo.init(),
