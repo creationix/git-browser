@@ -1,5 +1,6 @@
 require('js-git/lib/platform.js')({
   tcp: require('./tcp.js'),
+  fs: require('./fs.js'),
   sha1: require('../common/sha1.js'),
   inflate: require('../common/inflate.js'),
   deflate: require('../common/deflate.js'),
