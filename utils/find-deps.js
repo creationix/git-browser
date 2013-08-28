@@ -25,13 +25,24 @@ function add(path) {
   modules[path] = undefined;
   mine(code).forEach(function (match) {
     var name = match.name;
-    var oldLen = name.length;
     var newPath = baseResolve(base, name);
+    if (!newPath) {
+      console.error("Can't find " + name + " relative to " + base);
+      return;
+    }
     var offset = adjust + match.offset;
+    var oldLen = name.length;
     code = code.substr(0, offset) + newPath + code.substr(offset + oldLen);
     adjust += newPath.length - oldLen;
   });
   modules[path] = code;
+  return path;
+}
+
+function addJson(path) {
+  if (path in modules) return path;
+  var json = fs.readFileSync(path, "utf8");
+  modules[path] = "module.exports = " + json;
   return path;
 }
 
@@ -42,9 +53,7 @@ function baseResolve(base, name) {
   while (true) {
     var result = localResolve(pathJoin(newBase, "node_modules", name));
     if (result) return result;
-    if (newBase.length === 1) {
-      throw new Error("ENOENT: Can't find " + name + " relative to " + base);
-    }
+    if (newBase.length === 1) return false;
     newBase = dirname(newBase);
   }
 }
@@ -54,11 +63,15 @@ function localResolve(path) {
     if (fs.existsSync(path)) return add(path);
     return false;
   }
+  if (/\.json$/.test(path)) {
+    if (fs.existsSync(path)) return addJson(path);
+    return false;
+  }
   var packagePath = pathJoin(path, "package.json");
   if (fs.existsSync(packagePath)) {
     var json = fs.readFileSync(packagePath);
     var meta = JSON.parse(json);
-    return add(pathJoin(path, meta.main));
+    if (meta.main) return add(pathJoin(path, meta.main));
   }
   var indexPath = pathJoin(path, "index.js");
   if (fs.existsSync(indexPath)) {
@@ -81,7 +94,7 @@ if (process.argv[1] === __filename) {
   for (var i = 2; i < process.argv.length; i++) {
     codes.push("require(" + JSON.stringify(process.argv[i]) + ");");
   }
-  code = "(function (realRequire) {" + indent(codes.join("\n\n")) + "}(typeof require === 'function' && require));";
+  code = "(function (realRequire) {" + indent(codes.join("\n\n")) + "}(typeof require === 'function' ? require : undefined));";
   console.log(code);
 }
 
