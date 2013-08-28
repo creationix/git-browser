@@ -17,10 +17,10 @@ if (true) {
 
   module.exports = function (type, stream, item) {
     var message = messages[type];
-    if (!message) return stream;
     if (!stream) {
-      return log(message, item);
+      return log(message || type, item);
     }
+    if (!message) return stream;
     return { read: traceRead, abort: stream.abort };
     function traceRead(callback) {
       stream.read(function (err, item) {
