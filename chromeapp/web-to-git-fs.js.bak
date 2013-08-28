@@ -1,18 +1,36 @@
+var trace = require('../common/trace.js');
+
+function check(fn) {
+  return function () {
+    var last = arguments.length - 1;
+    if (typeof arguments[last] === "function") {
+      arguments[last] = wrapCallback(arguments[last]);
+      return fn.apply(this. arguments);
+    }
+    return rebind(fn, this, toArray(arguments));
+  };
+}
+
+function rebind(fn, self, args) {
+  return function (callback) {
+    return fn.apply(self, args.concat(wrapCallback(callback)));
+  };
+}
 
 module.exports = function (fs) {
   var root = fs.root;
 
-  chroot.read = read;
-  chroot.read = read;
-  chroot.write = write;
-  chroot.unlink = unlink;
-  chroot.readlink = readlink;
-  chroot.symlink = symlink;
-  chroot.readdir = readdir;
-  chroot.rmdir = rmdir;
-  chroot.mkdir = mkdir;
-  chroot.rename = rename;
-  chroot.mkdir = mkdir;
+  chroot.read = check(read);
+  chroot.read = check(read);
+  chroot.write = check(write);
+  chroot.unlink = check(unlink);
+  chroot.readlink = check(readlink);
+  chroot.symlink = check(symlink);
+  chroot.readdir = check(readdir);
+  chroot.rmdir = check(rmdir);
+  chroot.mkdir = check(mkdir);
+  chroot.rename = check(rename);
+  chroot.mkdir = check(mkdir);
   return chroot;
 
   function chroot(root) {
@@ -32,8 +50,10 @@ module.exports = function (fs) {
 
     function wrap(fn, two) {
       return function () {
+        if (trace) trace("wrap", null, arguments[0]);
         arguments[0] = pathJoin(root, pathJoin("/", arguments[0]));
         if (two) arguments[1] = pathJoin(root, pathJoin("/", arguments[1]));
+        arguments[arguments.length - 1] = wrapCallback(arguments[arguments.length - 1]);
         return fn.apply(this, arguments);
       };
     }
@@ -41,8 +61,7 @@ module.exports = function (fs) {
 
   // Given a path, return a continuable for the stat object.
   function stat(path, callback) {
-    if (!callback) return stat.bind(this, path);
-    var errorHandler = wrapCallback(callback);
+    if (trace) trace("stat", null, path);
     root.getFile(path, {create: false}, function (fileEntry) {
       fileEntry.getMetadata(function (metaData) {
         var mtime = metaData.modificationTime / 1000;
@@ -58,8 +77,8 @@ module.exports = function (fs) {
           gid: 0,        // Not available on this platform
           size: metaData.size
         });
-      }, errorHandler);
-    }, errorHandler);
+      }, callback);
+    }, callback);
   }
 
   function read(path, encoding, callback) {
@@ -67,8 +86,7 @@ module.exports = function (fs) {
       callback = encoding;
       encoding = undefined;
     }
-    if (!callback) return read.bind(this, path, encoding);
-    var errorHandler = wrapCallback(callback);
+    if (trace) trace("read", null, path);
     root.getFile(path, {}, function (fileEntry) {
       fileEntry.file(function(file) {
         var reader = new FileReader();
@@ -86,13 +104,15 @@ module.exports = function (fs) {
           return reader.readAsBinaryString(file);
         }
         return reader.readAsText(file, encoding);
-      }, errorHandler);
-    }, errorHandler);
+      }, callback);
+    }, callback);
   }
 
   function write(path, value, mode, callback) {
-    if (!callback) return write.bind(this, path, value, mode);
-    var errorHandler = wrapCallback(callback);
+    if (typeof mode === "function") {
+      callback = mode;
+    }
+    if (trace) trace("write", null, path);
     root.getFile(path, {create: true}, function (fileEntry) {
       fileEntry.createWriter(function(fileWriter) {
         fileWriter.onwriteend = function (evt) {
@@ -102,81 +122,70 @@ module.exports = function (fs) {
           callback(new Error("Write failed: " + evt.toString()));
         };
         fileWriter.write(new Blob([value]));
-      }, errorHandler);
-    }, errorHandler);
+      }, callback);
+    }, callback);
   }
 
   function unlink(path, callback) {
-    if (!callback) return unlink.bind(this, path);
-    var errorHandler = wrapCallback(callback);
+    if (trace) trace("unlink", null, path);
     root.getFile(path, {create: false}, function (fileEntry) {
       fileEntry.remove(function () {
         callback();
-      }, errorHandler);
-    }, errorHandler);
+      }, callback);
+    }, callback);
   }
 
   function readlink(path, callback) {
-    if (!callback) return readlink.bind(this, path);
+    if (trace) trace("readlink", null, path);
     callback(new Error("Symlinks are not supported in webfs"));
   }
 
   function symlink(path, value, callback) {
-    if (!callback) return symlink.bind(this, path, value);
+    if (trace) trace("symlink", null, path);
     callback(new Error("Symlinks are not supported in webfs"));
   }
 
   function readdir(path, callback) {
-    if (!callback) return readdir.bind(this, path);
-    var errorHandler = wrapCallback(callback);
+    if (trace) trace("readdir", null, path);
     root.getDirectory(path, {create: false}, function (dirEntry) {
       var dirReader = dirEntry.createReader();
       var entries = [];
-      dirReader.readEntries(onRead, errorHandler);
+      dirReader.readEntries(onRead, callback);
       function onRead(results) {
         if (results.length) {
           entries = entries.concat(toArray(results));
-          dirReader.readEntries(onRead, errorHandler);
+          dirReader.readEntries(onRead, callback);
         }
         callback(null, entries);
       }
-    }, errorHandler);
+    }, callback);
   }
 
   function rmdir(path, callback) {
-    if (!callback) return rmdir.bind(this, path);
-    var errorHandler = wrapCallback(callback);
+    if (trace) trace("rmdir", null, path);
     root.getDirectory(path, {create: false}, function (dirEntry) {
       dirEntry.remove(function () {
         callback();
-      }, function (e) {
-        var err = new Error(formatError(e));
-        if (e.code === FileError.INVALID_MODIFICATION_ERR) {
-          err.code = "ENOTEMPTY";
-        }
-        callback(err);
-      });
-    }, errorHandler);
+      }, callback);
+    }, callback);
   }
 
   function mkdir(path, callback) {
-    if (!callback) return mkdir.bind(this, path);
-    if (path === "." || path === "/") return callback();
-    var errorHandler = wrapCallback(callback);
+    if (trace) trace("mkdir", null, path);
+    if (path === ".") return callback();
     root.getDirectory(path, {create: true}, function (dirEntry) {
       callback();
-    }, errorHandler);
+    }, callback);
   }
 
   function rename(source, target, callback) {
-    if (!callback) return rename.bind(this, source, target);
-    var errorHandler = wrapCallback(callback);
+    if (trace) trace("rename", null, path);
     root.getFile(source, {}, function (fileEntry) {
       var dirName = dirname(target);
       root.getDirectory(dirName, {}, function (dirEntry) {
         fileEntry.moveTo(dirEntry);
-      }, errorHandler);
-    }, errorHandler);
+      }, callback);
+    }, callback);
   }
 
 
@@ -187,8 +196,11 @@ function toArray(list) {
 }
 
 function wrapCallback(callback) {
-  return function (err) {
-    callback(new Error(formatError(err)));
+  return function (err, data) {
+    if (err) {
+      callback(new Error(formatError(err)));
+    }
+    callback(null, data);
   };
 }
 
