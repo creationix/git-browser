@@ -23,42 +23,30 @@ var opts = {
   pathname: "/creationix/conquest.git"
 };
 
-window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
-window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction;
-window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
-
-var request = window.indexedDB.open("gitdb");
-request.onsuccess = onDb;
-request.onerror = function (evt) {
-  throw new Error("Unable to get database: " + request.errorCode);
-}
-
 var config = {
   includeTag: true,
   onProgress: log,
   onError: log
 };
 
-function onDb(idb) {
-  var repo = repoify(gitIdb(idb), true);
-  var connection = tcpProto(opts);
-  parallelData({
-    init: repo.init(),
-    pack: connection.fetch(config),
-  }, wrap(function (err, result) {
+var repo = repoify(gitIdb("gitdb"), true);
+var connection = tcpProto(opts);
+parallelData({
+  init: repo.init(),
+  pack: connection.fetch(config),
+}, wrap(function (err, result) {
+  if (err) throw err;
+  serial(
+    parallel(
+      repo.importRefs(result.pack.refs),
+      repo.unpack(result.pack, config)
+    ),
+    connection.close()
+  )(function (err) {
     if (err) throw err;
-    serial(
-      parallel(
-        repo.importRefs(result.pack.refs),
-        repo.unpack(result.pack, config)
-      ),
-      connection.close()
-    )(function (err) {
-      if (err) throw err;
-      log("DONE");
-    });
-  }));
-}
+    log("DONE");
+  });
+}));
 
 
 // Wrap a function in one that redirects exceptions.
