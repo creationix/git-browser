@@ -18,6 +18,7 @@ if (true) {
   module.exports = function (type, stream, item) {
     var message = messages[type];
     if (!stream) {
+      console.log(message || type, item);
       return log(message || type, item);
     }
     if (!message) return stream;
@@ -29,7 +30,7 @@ if (true) {
         callback(null, item);
       });
     }
-  }
+  };
 }
 else {
   module.exports = false;
