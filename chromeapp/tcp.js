@@ -1,4 +1,6 @@
+/*global chrome*/
 var socket = chrome.socket;
+var bops = require('../common/bops/index.js');
 
 exports.connect = connect;
 function connect(port, host, callback) {
@@ -14,7 +16,7 @@ function connect(port, host, callback) {
   socket.create("tcp", function (info) {
     socket.connect(info.socketId, host, port, function (result) {
       if (result < 0) {
-        return callback(new Error("Error " + byNumber[result] + " while connecting to " + address + ":" + port));
+        return callback(new Error("Error " + byNumber[result] + " while connecting to " + host + ":" + port));
       }
       callback(null, wrapSocket(info.socketId));
     });
