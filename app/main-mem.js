@@ -30,8 +30,8 @@ var config = {
 
 var repo = repoify(gitMemdb(), true);
 var connection = tcpProto(opts);
-connection.fetch(config, function (err, pack) {
-  log("onfetch", err, result)
+connection.fetch(config, wrap(function (err, pack) {
+  log("onfetch", err, pack);
   if (err) throw err;
   serial(
     parallel(
@@ -39,11 +39,11 @@ connection.fetch(config, function (err, pack) {
       repo.unpack(pack, config)
     ),
     connection.close()
-  )(function (err) {
+  )(wrap(function (err) {
     if (err) throw err;
     log("DONE");
-  });
-});
+  }));
+}));
 
 
 // Wrap a function in one that redirects exceptions.

@@ -30,7 +30,7 @@ module.exports = function (name) {
   }
 
   function read(path, callback) {
-    if (!callback) return fs.read(path, "ascii");
+    if (!callback) return read.bind(this, path);
     trace("TODO", null, {read:path});
     if (path in cache) return callback(null, cache[path]);
     callback(new Error("Cannot find " + path));
@@ -47,14 +47,14 @@ module.exports = function (name) {
 
   function load(hash, callback) {
     if (!callback) return load.bind(this, hash);
-    trace("TODO", null, {load:hash})
+    trace("TODO", null, {load:hash});
     if (hash in cache) return callback(null, cache[hash]);
     callback(new Error("Cannot find " + hash));
   }
 
   function remove(hash, callback) {
     if (!callback) return remove.bind(this, hash);
-    trace("TODO", null, {remove:hash})
+    trace("TODO", null, {remove:hash});
     delete cache[hash];
     callback();
   }

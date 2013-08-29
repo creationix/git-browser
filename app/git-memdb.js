@@ -24,7 +24,7 @@ module.exports = function () {
   }
 
   function read(path, callback) {
-    if (!callback) return fs.read(path, "ascii");
+    if (!callback) return read.bind(this, path);
     if (path in db) return callback(null, db[path]);
     callback(new Error("Cannot find " + path));
   }
