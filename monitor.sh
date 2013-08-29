@@ -1,1 +1,1 @@
-make firefox && while true; do find . -name "*.js" | xargs inotifywait; make firefox; done
+make && while true; do find . -name "*.js" | xargs inotifywait -e modify -e create; make; done
