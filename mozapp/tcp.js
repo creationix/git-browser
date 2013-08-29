@@ -25,7 +25,6 @@ function connect(port, host, callback) {
 }
 
 function wrapSocket(socket) {
-  socket = require('./trace-socket.js')(socket);
   var done = false;
   var cb = null;
   var queue = [];

@@ -6,7 +6,6 @@
   "dependencies": {
     "base64-js": "~0.0.2",
     "js-git": "~0.3.0",
-    "chrome-app-module-loader": "~0.0.3",
     "push-to-pull": "~0.1.0",
     "to-utf8": "~0.0.1",
     "varint": "~0.0.3",

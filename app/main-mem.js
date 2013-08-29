@@ -40,8 +40,8 @@ connection.fetch(config, wrap(function (err, pack) {
     ),
     connection.close()
   )(wrap(function (err) {
-    if (err) throw err;
-    log("DONE");
+    if (err) log("FAIL", err);
+    else log("DONE");
   }));
 }));
 
