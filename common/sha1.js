@@ -48,7 +48,7 @@ function create() {
       offset++;
       shift = 24;
     }
-    if (offset === 16) process();
+    if (offset === 16) processBlock();
   }
 
   // No more data will come, pad the block, process and return the result.
@@ -56,7 +56,7 @@ function create() {
     // Pad
     write(0x80);
     if (offset > 14 || (offset === 14 && shift < 24)) {
-      process();
+      processBlock();
     }
     offset = 14;
     shift = 24;
@@ -70,7 +70,7 @@ function create() {
       write(totalLength >> s);
     }
 
-    // At this point one last process() should trigger and we can pull out the result.
+    // At this point one last processBlock() should trigger and we can pull out the result.
     return toHex(h0)
          + toHex(h1)
          + toHex(h2)
@@ -79,7 +79,7 @@ function create() {
   }
 
   // We have a full block to process.  Let's do it!
-  function process() {
+  function processBlock() {
     // Extend the sixteen 32-bit words into eighty 32-bit words:
     for (var i = 16; i < 80; i++) {
       var w = block[i - 3] ^ block[i - 8] ^ block[i - 14] ^ block[i - 16];
@@ -97,7 +97,7 @@ function create() {
     var f, k;
 
     // Main loop:
-    for (var i = 0; i < 80; i++) {
+    for (i = 0; i < 80; i++) {
       if (i < 20) {
         f = d ^ (b & (c ^ d));
         k = 0x5A827999;
@@ -111,8 +111,8 @@ function create() {
         k = 0x8F1BBCDC;
       }
       else {
-        f = b ^ c ^ d
-        k = 0xCA62C1D6
+        f = b ^ c ^ d;
+        k = 0xCA62C1D6;
       }
       var temp = (a << 5 | a >>> 27) + f + e + k + block[i];
       e = d;
@@ -131,7 +131,7 @@ function create() {
 
     // The block is now reusable.
     offset = 0;
-    for (var i = 0; i < 16; i++) {
+    for (i = 0; i < 16; i++) {
       block[i] = 0;
     }
   }
@@ -142,22 +142,6 @@ function create() {
       hex += ((word >> i) & 0xf).toString(16);
     }
     return hex;
-  }
-
-  function log(data) {
-    console.log()
-    var line = "";
-    for (var i = 0, l = data.length; i < l; i++) {
-      line += toHex(data[i]);
-      if (i % 4 === 3) {
-        console.log(line);
-        line = "";
-      }
-      else {
-        line += " ";
-      }
-    }
-    if (line) console.log(line);
   }
 
 }
