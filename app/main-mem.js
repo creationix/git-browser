@@ -14,9 +14,7 @@ var repoify = require('js-git/lib/repo.js');
 var tcpProto = require('js-git/protocols/tcp.js');
 var serial = require('js-git/helpers/serial.js');
 var parallel = require('js-git/helpers/parallel.js');
-var parallelData = require('js-git/helpers/parallel-data.js');
 var gitMemdb = require('./git-memdb.js');
-var platform = require('js-git/lib/platform.js');
 
 var opts = {
   protocol: "git:",
