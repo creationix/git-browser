@@ -10,7 +10,7 @@
     "push-to-pull": "~0.1.0",
     "to-utf8": "~0.0.1",
     "varint": "~0.0.3",
-    "domlog": "0.0.7",
+    "domlog": "0.0.9",
     "dombuilder": "~0.1.2"
   },
   "repository": {
