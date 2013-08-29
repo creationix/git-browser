@@ -20,11 +20,40 @@ function connect(port, host, callback) {
   };
 
   socket.onerror = function (err) {
-    callback(new Error("Connection Error: " + err.type));
+    callback(new Error(err.data.name));
   };
 }
 
+function tap(name, fn, thisp) {
+  return function () {
+    var args = [name];
+    for (var i = 0, l = arguments.length; i < l; i++) {
+      args.push(arguments[i]);
+    }
+    log.apply(null, args);
+    return fn.apply(thisp || this, arguments);
+  };
+}
+function traceSocket(real) {
+  return {
+    get ondata() { log("GET ondata"); return real.ondata; },
+    set ondata(fn) { log("SET ondata", fn); return real.ondata = tap("ONDATA", fn); },
+    get onclose() { log("GET onclose"); return real.onclose; },
+    set onclose(fn) { log("SET onclose", fn); return real.onclose = tap("ONCLOSE", fn); },
+    get onerror() { log("GET onerror"); return real.onerror; },
+    set onerror(fn) { log("SET onerror", fn); return real.onerror = tap("ONERROR", fn); },
+    get ondrain() { log("GET ondrain"); return real.ondrain; },
+    set ondrain(fn) { log("SET ondrain", fn); return real.ondrain = tap("ONDRAIN", fn); },
+    close: tap("CLOSE", real.close, real),
+    send: tap("SEND", real.send, real),
+    suspend: tap("SUSPEND", real.suspend, real),
+    resume: tap("RESUME", real.resume, real),
+  };
+}
+
+
 function wrapSocket(socket) {
+  socket = traceSocket(socket);
   var done = false;
   var cb = null;
   var queue = [];
@@ -40,25 +69,12 @@ function wrapSocket(socket) {
   };
 
   socket.onclose = function () {
-    log("onclose")
     queue.push([]);
     return check();
   };
   
   socket.onerror = function (err) {
-    log("onerror", err);
-    // log("onerror", err, {
-    //   target:err.target,
-    //   type:err.type,
-    //   canBubble: err.canBubble,
-    //   cancelable: err.cancelable,
-    //   view: err.view,
-    //   detail: err.detail
-    // });
-    log("readyState", socket.readyState);
-    
-    debugger;
-    
+    err = new Error(err.data.name);
     queue.push([err]);
     return check();
   };
@@ -72,20 +88,16 @@ function wrapSocket(socket) {
   return { read: read, abort: abort, sink: sink };
 
   function check() {
-    log("check", {cb:!!cb,queue:!!queue.length});
     if (cb && queue.length) {
       var callback = cb;
       cb = null;
       callback.apply(null, queue.shift());
     }
-    log("check2", {cb:!!cb,queue:!!queue.length});
     if (paused && cb && !queue.length) {
-      log("socket.resume")
       paused = false;
       socket.resume();
     }
     else if (!paused && !cb && queue.length) {
-      log("socket.suspend")
       paused = true;
       socket.suspend();
     }
@@ -129,12 +141,7 @@ function wrapSocket(socket) {
     if (socket.send(chunk.buffer)) {
       reading = true;
       source.read(onRead);
-      log("EMPTY")
     }
-    else {
-      log("FULL!")
-    }
-    log({bufferedAmount:socket.bufferedAmount})
   }
 
 }
