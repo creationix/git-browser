@@ -6,3 +6,4 @@ require('js-git/lib/platform.js')({
   agent: "jsgit/" + require('js-git/package.json').version,
 });
 require('../app/main-mem.js');
+// require('./mozapp.js');

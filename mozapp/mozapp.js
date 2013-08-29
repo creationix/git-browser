@@ -14,7 +14,8 @@ socket.onopen = function () {
     send("want 709d18d775cf6f970db26fa771da347fbb7d9151\n");
     send(null);
     send("done\n");
-  }, 500);
+  }, 100);
+  socket.resume();
 };
 
 socket.ondata = function (evt) {
