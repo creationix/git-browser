@@ -11,72 +11,63 @@ function connect(port, host, callback) {
   if (typeof port !== "number") throw new TypeError("port must be number");
   if (typeof host !== "string") throw new TypeError("host must be string");
   if (typeof callback !== "function") throw new TypeError("callback must be function");
-  log("connect", port, host, callback)
 
   var socket = TCPSocket.open(host, port, { binaryType: "arraybuffer" });
 
   socket.onopen = function () {
-    log("onopen", {
-      host: socket.host,
-      port: socket.port,
-      ssl: socket.ssl,
-      bufferedAmount: socket.bufferedAmount,
-      binaryType: socket.binaryType,
-      readyState: socket.readyState
-    });
     socket.onopen = null;
     callback(null, wrapSocket(socket));
   };
-  socket.ondata = function (evt) {
-    log("ondata", evt);
-  };
+
   socket.onerror = function (err) {
     callback(new Error("Connection Error: " + err.type));
   };
 }
 
 function wrapSocket(socket) {
-  log("wrapSocket", socket)
   var done = false;
   var cb = null;
   var queue = [];
   var reading = false;
   var source = null;
+  var paused = false;
   var finish;
 
   socket.ondata = function (evt) {
     var chunk = new Uint8Array(evt.data);
-    log("ondata", chunk);
     queue.push([null, chunk]);
     return check();
   };
 
   socket.onclose = function () {
-    log("onclose");
+    log("onclose")
     queue.push([]);
     return check();
   };
-
+  
   socket.onerror = function (err) {
     log("onerror", err);
+    // log("onerror", err, {
+    //   target:err.target,
+    //   type:err.type,
+    //   canBubble: err.canBubble,
+    //   cancelable: err.cancelable,
+    //   view: err.view,
+    //   detail: err.detail
+    // });
+    log("readyState", socket.readyState);
+    
+    debugger;
+    
     queue.push([err]);
     return check();
   };
 
   socket.ondrain = function () {
-    log("ondrain");
     if (reading) return;
     reading = true;
     source.read(onRead);
   };
-
-  log("listeners", {
-    onopen: socket.onopen,
-    ondrain: socket.ondrain,
-    onerror: socket.onerror,
-    ondata: socket.ondata,
-    onclose: socket.onclose,
-  });
 
   return { read: read, abort: abort, sink: sink };
 
@@ -88,26 +79,19 @@ function wrapSocket(socket) {
       callback.apply(null, queue.shift());
     }
     log("check2", {cb:!!cb,queue:!!queue.length});
-    if (cb && !queue.length) {
+    if (paused && cb && !queue.length) {
       log("socket.resume")
+      paused = false;
       socket.resume();
     }
-    else if (!cb && queue.length) {
+    else if (!paused && !cb && queue.length) {
       log("socket.suspend")
+      paused = true;
       socket.suspend();
     }
-    log("aftercheck", {
-      host: socket.host,
-      port: socket.port,
-      ssl: socket.ssl,
-      bufferedAmount: socket.bufferedAmount,
-      binaryType: socket.binaryType,
-      readyState: socket.readyState
-    });
   }
 
   function read(callback) {
-    log("read", callback);
     if (done) return callback();
     if (cb) return callback(new Error("Only one read at a time allowed"));
     cb = callback;
@@ -115,7 +99,6 @@ function wrapSocket(socket) {
   }
 
   function abort(callback) {
-    log("abort", callback);
     if (done) return callback();
     done = true;
     socket.ondata = null;
@@ -128,7 +111,6 @@ function wrapSocket(socket) {
 
   function sink(stream, callback) {
     if (!callback) return sink.bind(this, stream);
-    log("sink", stream, callback);
     if (source) throw new Error("Already has source");
     source = stream;
     finish = callback;
@@ -137,7 +119,6 @@ function wrapSocket(socket) {
   }
 
   function onRead(err, chunk) {
-    log("onRead", err, chunk);
     reading = false;
     if (chunk === undefined) {
       socket.ondrain = null;
@@ -145,11 +126,15 @@ function wrapSocket(socket) {
       socket.close();
       return finish(err);
     }
-    log("socket.send", chunk)
     if (socket.send(chunk.buffer)) {
       reading = true;
       source.read(onRead);
+      log("EMPTY")
     }
+    else {
+      log("FULL!")
+    }
+    log({bufferedAmount:socket.bufferedAmount})
   }
 
 }
