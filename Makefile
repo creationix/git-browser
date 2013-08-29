@@ -1,14 +1,17 @@
 CHROME=build/chromeapp
-CHROME_ZIP=build/git-browser-chrome.zip
+CHROME_ZIP=../git-browser-chrome.zip
 FIREFOX=build/firefoxapp
+FIREFOX_ZIP=../git-browser-firefox.zip
 
-all: chrome zip firefox
+all: chrome chrome-zip firefox firefox-zip
 
 chrome: ${CHROME} ${CHROME}/app.js ${CHROME}/manifest.json ${CHROME}/background.js ${CHROME}/index.html ${CHROME}/icons
 
-zip: chrome
-	rm -f ${CHROME_ZIP}
-	zip -o -r ${CHROME_ZIP} ${CHROME}
+chrome-zip: chrome
+	cd ${CHROME} && rm -f ${CHROME_ZIP} && zip -o -r ${CHROME_ZIP} .
+
+firefox-zip: chrome
+	cd ${FIREFOX} && rm -f ${FIREFOX_ZIP} && zip -o -r ${FIREFOX_ZIP} .
 
 ${CHROME}:
 	mkdir -p ${CHROME}
