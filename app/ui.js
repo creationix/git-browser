@@ -1,13 +1,18 @@
 var domBuilder = require('dombuilder');
 
 var repos = [
-  ["creationix/conquest", "A remake of the classic Lords of Conquest for C64 implemented in JavaScript"],
-  ["creationix/dombuilder", "An easy dombuilder using json-ml style syntax"],
-  ["creationix/js-git", "A JavaScript implementation of Git"],
-  ["creationix/git-browser", "Browse Git Repos offline"],
-  ["creationix/luv", "Bare libuv bindings for lua"],
-  ["luvit/luvit", "Lua + libUV + jIT = pure awesomesauce"],
-  ["creationix/rec", "A tool for recording CLI programs and posting their output."],
+  ["creationix",
+    ["conquest", "A remake of the classic Lords of Conquest for C64 implemented in JavaScript"],
+    ["dombuilder", "An easy dombuilder using json-ml style syntax"],
+    ["js-git", "A JavaScript implementation of Git"],
+    ["git-browser", "Browse Git Repos offline"],
+    ["luv", "Bare libuv bindings for lua"],
+    ["rec", "A tool for recording CLI programs and posting their output."],
+  ],
+  ["luvit",
+    ["luvit", "Lua + libUV + jIT = pure awesomesauce"],
+    ["kernel", "A simple async template language similair to dustjs and mustache (ported from c9/kernel)"],
+  ]
 ];
 
 var commits = [
@@ -72,16 +77,26 @@ document.body.appendChild(domBuilder([
       ["h1", "Git Repositories"]
     ],
     ["article.content.scrollable.header",
-      ["div", {"data-type": "list"},
-        ["ul", repos.map(function (repo) {
-          return ["li",
-            ["a", {href:"#",onclick:left("index", "history")},
-              ["p", repo[0]],
-              ["p", repo[1]],
-            ]
-          ];
-        })]
-      ]
+      ["section", {"data-type":"list"}, repos.map(function (pair) {
+        return [
+          ["header", pair[0]],
+          ["ul", pair.slice(1).map(function (repo) {
+            var url = {
+              protocol: "git:",
+              hostname: "github.com",
+              port: 9418,
+              pathname: pair[0] + "/" + repo[0] + ".git"
+            };
+            return ["li",
+              ["a", {href:"#",onclick:left("index","history")},
+                ["p", repo[0]],
+                ["p", repo[1]],
+                ["progress.pack-activity", {value:80,max:100}],
+              ]
+            ];
+          })]
+        ]
+      })]
     ]
   ],
 
