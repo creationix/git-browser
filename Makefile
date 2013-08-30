@@ -5,7 +5,7 @@ FIREFOX_ZIP=../git-browser-firefox.zip
 
 all: chrome chrome-zip firefox firefox-zip
 
-chrome: ${CHROME} ${CHROME}/app.js ${CHROME}/manifest.json ${CHROME}/background.js ${CHROME}/index.html ${CHROME}/icons ${CHROME}/bb ${CHROME}/style.css
+chrome: ${CHROME} ${CHROME}/app.js ${CHROME}/manifest.json ${CHROME}/background.js ${CHROME}/index.html ${CHROME}/icons ${CHROME}/bb ${CHROME}/style.css ${CHROME}/octicons
 
 chrome-zip: chrome
 	cd ${CHROME} && rm -f ${CHROME_ZIP} && zip -o -r ${CHROME_ZIP} .
@@ -37,7 +37,10 @@ ${CHROME}/icons: icons
 ${CHROME}/bb: bb
 	cp -r bb ${CHROME}/bb
 
-firefox: ${FIREFOX} ${FIREFOX}/app.js ${FIREFOX}/manifest.webapp ${FIREFOX}/index.html ${FIREFOX}/icons ${FIREFOX}/bb ${FIREFOX}/style.css
+${CHROME}/octicons: octicons
+	cp -r octicons ${CHROME}/octicons
+
+firefox: ${FIREFOX} ${FIREFOX}/app.js ${FIREFOX}/manifest.webapp ${FIREFOX}/index.html ${FIREFOX}/icons ${FIREFOX}/bb ${FIREFOX}/style.css ${FIREFOX}/octicons
 
 ${FIREFOX}:
 	mkdir -p ${FIREFOX}
@@ -59,6 +62,9 @@ ${FIREFOX}/icons: icons
 
 ${FIREFOX}/bb: bb
 	cp -r bb ${FIREFOX}/bb
+
+${FIREFOX}/octicons: octicons
+	cp -r octicons ${FIREFOX}/octicons
 
 clean:
 	rm -rf build

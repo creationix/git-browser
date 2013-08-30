@@ -78,7 +78,7 @@ function header(options) {
     header.push(["menu", {type: "toolbar"},
       map(options.actions, function (name, action) {
         return ["a", {href:"#", onclick: wrap(options, action)},
-          ["span", {class: "icon icon-" + name}, name]
+          ["span", {class: name}]
         ];
       })
     ]);
@@ -115,14 +115,27 @@ function list(items, onclick) {
 // item.subtitle - subtitle
 // item.onclick - click action
 function listItem(item, onclick) {
-  var line = [["p", item.title]];
+  var line = [];
+  if (item.icon) {
+    line.push(["aside",
+      ["span", {class:item.icon}]
+    ]);
+  }
+  if (item.iconRight) {
+    line.push(["aside.pack-end",
+      ["span", {class:item.iconRight}]
+    ]);
+  }
+  line.push(["p", item.title]);
   if (item.sub) {
     line.push(["p", item.sub]);
   }
   if (onclick) {
     line = ["a", {href:"#",onclick: wrap(item, onclick)}, line];
   }
-  return ["li", line];
+  line = ["li", line];
+  console.log(line)
+  return line;
 }
 
 // Wrap a callback so that it auto-prevents default and is in scope.

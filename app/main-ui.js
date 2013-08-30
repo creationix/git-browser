@@ -8,13 +8,14 @@ function repoList() {
   var body = [
     ui.header({
       title: "Git Repositories",
-      actions: { edit: edit, add: add }
+      actions: {
+        "octicon octicon-repo-create": add,
+      }
     }),
     ui.groupedList(dummy.repos, load)
   ];
   return domBuilder(ui.page(body));
 
-  function edit() {}
   function add() {}
   function load() {
     ui.push(historyList());
@@ -41,8 +42,11 @@ function filesList() {
       title: "conquest - Files",
       back: ui.pop
     }),
-    ui.list(dummy.tree)
+    ui.list(dummy.tree, load)
   ];
   return domBuilder(ui.page(body));
+  function load() {
+
+  }
 }
 

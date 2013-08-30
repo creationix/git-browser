@@ -39,3 +39,18 @@ section[role="region"] {
   pointer-events: none;
   -webkit-pointer-events: none;
 }
+
+menu[type="toolbar"] .octicon {
+  font-size: 24px;
+  line-height: 0;
+  text-shadow: 1px 1px rgba(0,0,0,0.3);
+}
+
+aside .octicon {
+  font-size: 24px;
+  line-height: 2.5em;
+}
+aside.pack-end .octicon {
+  margin-right: -0.5em;
+}
+
