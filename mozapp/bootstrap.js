@@ -7,4 +7,4 @@
 // });
 // require('../app/main-mem.js');
 // require('./mozapp.js');
-require('../app/ui.js');
+require('../app/main-ui.js');

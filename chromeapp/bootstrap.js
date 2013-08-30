@@ -8,4 +8,4 @@
 //   agent: "jsgit/" + require('js-git/package.json').version,
 // });
 // require('../app/main-mem.js');
-require('../app/ui.js');
+require('../app/main-ui.js');
