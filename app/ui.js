@@ -11,6 +11,8 @@ exports.groupedList = groupedList;
 // items is an array of item objects
 exports.list = list;
 
+var map = require('./util.js').map;
+
 function header(options) {
   var header = ["header.fixed"];
   if (options.back) {
@@ -67,17 +69,6 @@ function listItem(item) {
     line = ["a", {href:"#",onclick: wrap(item, item.onclick)}, line];
   }
   return ["li", line];
-}
-
-// Simple helper to map over an object and return an array
-function map(obj, callback) {
-  var keys = Object.keys(obj);
-  var result = [];
-  for (var i = 0, l = keys.length; i < l; i++) {
-    var key = keys[i];
-    result.push(callback(key, obj[key]));
-  }
-  return result;
 }
 
 // Wrap a callback so that it auto-prevents default and is in scope.
