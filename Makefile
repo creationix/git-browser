@@ -5,7 +5,7 @@ FIREFOX_ZIP=../git-browser-firefox.zip
 
 all: chrome chrome-zip firefox firefox-zip
 
-chrome: ${CHROME} ${CHROME}/app.js ${CHROME}/manifest.json ${CHROME}/background.js ${CHROME}/index.html ${CHROME}/icons ${CHROME}/bb
+chrome: ${CHROME} ${CHROME}/app.js ${CHROME}/manifest.json ${CHROME}/background.js ${CHROME}/index.html ${CHROME}/icons ${CHROME}/bb ${CHROME}/style.css
 
 chrome-zip: chrome
 	cd ${CHROME} && rm -f ${CHROME_ZIP} && zip -o -r ${CHROME_ZIP} .
@@ -28,13 +28,16 @@ ${CHROME}/background.js: chromeapp/background.js
 ${CHROME}/index.html: app/index.html
 	cp app/index.html ${CHROME}/index.html
 
+${CHROME}/style.css: app/style.css
+	cp app/style.css ${CHROME}/style.css
+
 ${CHROME}/icons: icons
 	cp -r icons ${CHROME}/icons
 
 ${CHROME}/bb: bb
 	cp -r bb ${CHROME}/bb
 
-firefox: ${FIREFOX} ${FIREFOX}/app.js ${FIREFOX}/manifest.webapp ${FIREFOX}/index.html ${FIREFOX}/icons ${FIREFOX}/bb
+firefox: ${FIREFOX} ${FIREFOX}/app.js ${FIREFOX}/manifest.webapp ${FIREFOX}/index.html ${FIREFOX}/icons ${FIREFOX}/bb ${FIREFOX}/style.css
 
 ${FIREFOX}:
 	mkdir -p ${FIREFOX}
@@ -46,7 +49,10 @@ ${FIREFOX}/manifest.webapp: mozapp/manifest.webapp
 	cp mozapp/manifest.webapp ${FIREFOX}/manifest.webapp
 
 ${FIREFOX}/index.html: app/index.html
-	cp app/index.html ${CHROME}/index.html
+	cp app/index.html ${FIREFOX}/index.html
+
+${FIREFOX}/style.css: app/style.css
+	cp app/style.css ${FIREFOX}/style.css
 
 ${FIREFOX}/icons: icons
 	cp -r icons ${FIREFOX}/icons

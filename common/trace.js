@@ -1,13 +1,11 @@
 if (true) {
 
-  var log = require('domlog');
+  // var log = require('domlog');
   var messages = {
     request: "\u21A0",
     response: "\u219E",
     input: "\u2190",
     output: "\u2192",
-    exec: "exec",
-    connect: "connect",
     save: "\u2907",
     load: "\u2906",
     remove: "\u2716",
@@ -16,17 +14,19 @@ if (true) {
   };
 
   module.exports = function (type, stream, item) {
-    var message = messages[type];
+    var message = messages[type] || type;
     if (!stream) {
-      console.log(message || type, item);
-      return log(message || type, item);
+      console.log(message, item);
+      // log(message || type, item);
+      return;
     }
     if (!message) return stream;
     return { read: traceRead, abort: stream.abort };
     function traceRead(callback) {
       stream.read(function (err, item) {
         if (err) return callback(err);
-        log(message, item);
+        console.log(message, item);
+        // log(message, item);
         callback(null, item);
       });
     }
