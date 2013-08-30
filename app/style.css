@@ -2,7 +2,6 @@ section[role="region"] {
   position: absolute;
   width: 100%;
 }
-
 .scrollable {
   overflow: auto !important;
 }
@@ -19,16 +18,24 @@ section[role="region"] {
 [data-position="right"].current {
   animation: rightToCurrent 0.4s forwards;
   -webkit-animation: rightToCurrent 0.4s forwards;
+  pointer-events: none;
+  -webkit-pointer-events: none;
 }
 [data-position="current"].right {
   animation: currentToRight 0.4s forwards;
   -webkit-animation: currentToRight 0.4s forwards;
+  pointer-events: none;
+  -webkit-pointer-events: none;
 }
 [data-position="current"].left {
   animation: currentToLeft 0.4s forwards;
   -webkit-animation: currentToLeft 0.4s forwards;
+  pointer-events: none;
+  -webkit-pointer-events: none;
 }
 [data-position="left"].current {
   animation: leftToCurrent 0.4s forwards;
   -webkit-animation: leftToCurrent 0.4s forwards;
+  pointer-events: none;
+  -webkit-pointer-events: none;
 }
