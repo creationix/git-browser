@@ -1,38 +1,8 @@
 var repos = exports.repos = [
   {
-    name: "creationix/mine",
-    description: "Miner digs into a javascript file looking for require calls. Used to statically extract common js dependencies.",
-    db: require('../repos/mine.json')
-  },
-  {
-    name: "creationix/uvrun",
-    description: "Tiny node module to expose uv_run and uv_run_once to JavaScript",
-    db: require('../repos/uvrun.json')
-  },
-  {
-    name: "creationix/push-to-pull",
-    description: "Convert a push-filter to a pull-filter (for simple streams) ",
-    db: require('../repos/push-to-pull.json')
-  },
-  {
-    name: "creationix/domlog",
-    description: "A simple on-screen logger using dombuilder to create elements.",
-    db: require('../repos/domlog.json')
-  },
-  {
-    name: "creationix/dombuilder",
-    description: "An easy dombuilder using json-ml style syntax",
-    db: require('../repos/dombuilder.json')
-  },
-  {
-    name: "creationix/rec",
-    description: "A tool for recording CLI programs and posting their output",
-    db: require('../repos/rec.json')
-  },
-  {
-    name: "creationix/gen-run",
-    description: "Generator Async Runner. Makes it possible to yield and wait for callbacks and continuables.",
-    db: require('../repos/gen-run.json')
+    name: "creationix/msgpack-js",
+    description: "The msgpack protocol implemented in pure javascript.",
+    db: require('../repos/msgpack-js.json')
   },
   {
     name: "creationix/conquest",
@@ -40,10 +10,40 @@ var repos = exports.repos = [
     db: require('../repos/conquest.json')
   },
   {
-    name: "creationix/msgpack-js",
-    description: "The msgpack protocol implemented in pure javascript.",
-    db: require('../repos/msgpack-js.json')
-  }
+    name: "creationix/gen-run",
+    description: "Generator Async Runner. Makes it possible to yield and wait for callbacks and continuables.",
+    db: require('../repos/gen-run.json')
+  },
+  {
+    name: "creationix/rec",
+    description: "A tool for recording CLI programs and posting their output",
+    db: require('../repos/rec.json')
+  },
+  {
+    name: "creationix/dombuilder",
+    description: "An easy dombuilder using json-ml style syntax",
+    db: require('../repos/dombuilder.json')
+  },
+  {
+    name: "creationix/domlog",
+    description: "A simple on-screen logger using dombuilder to create elements.",
+    db: require('../repos/domlog.json')
+  },
+  {
+    name: "creationix/push-to-pull",
+    description: "Convert a push-filter to a pull-filter (for simple streams) ",
+    db: require('../repos/push-to-pull.json')
+  },
+  {
+    name: "creationix/uvrun",
+    description: "Tiny node module to expose uv_run and uv_run_once to JavaScript",
+    db: require('../repos/uvrun.json')
+  },
+  {
+    name: "creationix/mine",
+    description: "Miner digs into a javascript file looking for require calls. Used to statically extract common js dependencies.",
+    db: require('../repos/mine.json')
+  },
 ];
 window.repos = repos;
 
@@ -67,24 +67,23 @@ function historyStream(db, hash) {
     }
   }
 
-  return { read: read, abort: abort };
+  return { next: getNext, abort: abort };
 
-  function read(callback) {
-    if (done) return callback();
+  function getNext() {
+    if (done) return;
     var next = queue.pop();
-    if (!next) return abort(callback);
+    if (!next) return abort();
     next = next[0];
     if (next.parents) {
       next.parents.forEach(enqueue);
     }
-    callback(null, next);
+    return next;
   }
 
-  function abort(callback) {
+  function abort() {
     done = true;
     queue = null;
     seen = null;
-    callback();
   }
 
   function enqueue(hash) {

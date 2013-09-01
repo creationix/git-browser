@@ -18,6 +18,8 @@ exports.page = page;
 exports.push = push;
 // Pop the top page from the navigation
 exports.pop = pop;
+// Swap the current page with another
+exports.peer = peer;
 
 document.body.textContent = "";
 var pages = [];
@@ -59,7 +61,11 @@ function pop() {
   }, 400);
 }
 
-
+function peer(next) {
+  // TODO: make this prettier
+  pop();
+  push(next);
+}
 
 function page(body, skin) {
   var opts = {role:"region"};
@@ -86,6 +92,9 @@ function header(options) {
   if (options.title) {
     header.push(["h1", options.title]);
   }
+  if (options.sub) {
+    header.push(["h2", options.sub]);
+  }
   return header;
 }
 
@@ -104,6 +113,7 @@ function listGroup(name, items, onclick) {
 }
 
 function list(items, onclick) {
+  console.log("list", items, onclick)
   return ["article.content.scrollable.header",
     ["ul", {"data-type": "list"},
       arrMap(items, listItem, onclick)
@@ -141,7 +151,7 @@ function listItem(item, onclick) {
 function wrap(obj, fn) {
   return function (evt) {
     evt.preventDefault();
-    return fn.call(obj, obj.data);
+    return fn.apply(obj, obj.data || []);
   };
 }
 
