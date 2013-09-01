@@ -77,6 +77,12 @@ function localResolve(path) {
   if (fs.existsSync(indexPath)) {
     return add(indexPath);
   }
+  if (fs.existsSync(path + ".js")) {
+    return add(path + ".js");
+  }
+  if (fs.existsSync(path + ".json")) {
+    return addJson(path + ".json");
+  }
   return false;
 }
 
