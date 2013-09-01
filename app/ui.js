@@ -141,7 +141,7 @@ function listItem(item, onclick) {
 function wrap(obj, fn) {
   return function (evt) {
     evt.preventDefault();
-    return fn.call(obj);
+    return fn.call(obj, obj.data);
   };
 }
 
