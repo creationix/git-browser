@@ -10,7 +10,8 @@
     "to-utf8": "~0.0.1",
     "varint": "~0.0.3",
     "domlog": "0.0.9",
-    "dombuilder": "~0.1.2"
+    "dombuilder": "~0.1.2",
+    "markdown": "~0.5.0"
   },
   "repository": {
     "type": "git",

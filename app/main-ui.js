@@ -1,6 +1,7 @@
 var domBuilder = require('dombuilder');
 var ui = require('./ui.js');
 var data = require('./data.js');
+var md = require('markdown').markdown;
 
 ui.push(repoList());
 // var repo = data.repos[1];
@@ -146,58 +147,93 @@ function filesList(repo, tree) {
       back: ui.pop,
     }),
     ui.list(tree.map(function (file) {
+      var type = guessType(file);
       var entry = {
         title: file.name,
         sub: file.hash,
-        data: [file]
+        data: [file, type],
+        icon: "octicon octicon-" + type
       };
-      if (file.mode === 040000) {
-        entry.icon = "octicon octicon-file-directory";
+      if (type === "file-directory") {
         entry.iconRight = "octicon octicon-chevron-right";
-      }
-      else if (file.mode === 0120000) {
-        entry.data = ["tree", file.hash];
-        if (/\.[a-z0-9]{1,7}$/i.test(file.name)) {
-          entry.icon = "octicon octicon-symlink-file";
-        }
-        else {
-          entry.icon = "octicon octicon-symlink-directory";
-        }
-      }
-      else {
-        if (/\.(png|jpg|jpeg|gif|bmp|m4a|avi|mpeg|ogg|mp3|aac|svg)$/i.test(file.name)) {
-          entry.icon = "octicon octicon-file-media";
-        }
-        else if (/\.(js|css|lua|html|md|markdown|json|rb|py)$/i.test(file.name)) {
-          entry.icon = "octicon octicon-file-code";
-        }
-        else if (/\.(pdf)$/i.test(file.name)) {
-          entry.icon = "octicon octicon-file-pdf";
-        }
-        else if (/\.(txt|log)$/i.test(file.name)) {
-          entry.icon = "octicon octicon-file-text";
-        }
-        else if (/\.(zip)$/i.test(file.name)) {
-          entry.icon = "octicon octicon-file-zip";
-        }
-        else {
-          entry.icon = "octicon octicon-file-binary";
-        }
       }
       return entry;
     }), load)
   ];
   return domBuilder(ui.page(body, "dark"));
-  function load(file) {
-    if (file.mode === 040000) {
+  function load(file, type) {
+    if (type === "file-directory") {
       var tree = repo.db.objects[file.hash].body;
-      ui.push(filesList(repo, tree));
+      return ui.push(filesList(repo, tree));
+    }
+    if (type === "file-code" || type === "file-text") {
+      var body = repo.db.objects[file.hash].body;
+      if (/.(md|markdown)$/i.test(file.name)) {
+        return ui.push(showMarkdown(repo, file.name, body));
+      }
+      return ui.push(showText(repo, file.name, body));
     }
   }
+}
+
+function showMarkdown(repo, name, text) {
+
+  var body = [
+    ui.header({
+      title: name + " - " + repo.name,
+      back: ui.pop,
+    }),
+    ["article.content.scrollable.header",
+      md.toHTMLTree(md.parse(text))
+    ]
+  ];
+  return domBuilder(ui.page(body, "dark"));
+}
+
+function showText(repo, name, text) {
+  var body = [
+    ui.header({
+      title: name + " - " + repo.name,
+      back: ui.pop,
+    }),
+    ["article.content.scrollable.header",
+      ["p", {css:{whiteSpace:"pre-wrap"}}, text]
+    ]
+  ];
+  return domBuilder(ui.page(body, "dark"));
 }
 
 function truncate(message, limit) {
   var title = message.split(/[\r\n]/)[0];
   if (title.length > limit) title = title.substr(0, limit - 3) + "...";
   return title;
+}
+
+function guessType(file) {
+  if (file.mode === 040000) {
+    return "file-directory";
+  }
+  if (file.mode === 0120000) {
+    if (/\.[a-z0-9]{1,7}$/i.test(file.name)) {
+      return "symlink-file";
+    }
+    return "symlink-directory";
+  }
+  if (/\.(png|jpg|jpeg|gif|bmp|m4a|avi|mpeg|ogg|mp3|aac|svg)$/i.test(file.name)) {
+    return"file-media";
+  }
+  if (/\.(js|css|lua|html|md|markdown|json|rb|py)$/i.test(file.name)) {
+    return"file-code";
+  }
+  if (/\.(pdf)$/i.test(file.name)) {
+    return"file-pdf";
+  }
+  if (/\.(txt|log)$/i.test(file.name)) {
+    return"file-text";
+  }
+  if (/\.(zip)$/i.test(file.name)) {
+    return"file-zip";
+  }
+  return"file-binary";
+
 }
