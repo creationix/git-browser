@@ -10,6 +10,7 @@ exports.groupedList = groupedList;
 // Generate domBuilder JSON for a flast list
 // items is an array of item objects
 exports.list = list;
+exports.listItem = listItem;
 // Generate a page
 // options.skin (dark, organic, etc...)
 // options.body JSON content for body.
@@ -20,6 +21,8 @@ exports.push = push;
 exports.pop = pop;
 // Swap the current page with another
 exports.peer = peer;
+exports.map = map;
+exports.arrMap = arrMap;
 
 document.body.textContent = "";
 var pages = [];
@@ -113,7 +116,6 @@ function listGroup(name, items, onclick) {
 }
 
 function list(items, onclick) {
-  console.log("list", items, onclick)
   return ["article.content.scrollable.header",
     ["ul", {"data-type": "list"},
       arrMap(items, listItem, onclick)

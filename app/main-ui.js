@@ -3,13 +3,13 @@ var ui = require('./ui.js');
 var data = require('./data.js');
 
 ui.push(repoList());
-var repo = data.repos[1];
-ui.push(historyList(repo));
-var hash = repo.db.refs["refs/heads/master"];
-var commit = repo.db.objects[hash].body;
-ui.push(commitPage(repo, commit));
-var tree = repo.db.objects[commit.tree].body;
-ui.push(filesList(repo, tree));
+// var repo = data.repos[1];
+// ui.push(historyList(repo));
+// var hash = repo.db.refs["refs/heads/master"];
+// var commit = repo.db.objects[hash].body;
+// ui.push(commitPage(repo, commit));
+// var tree = repo.db.objects[commit.tree].body;
+// ui.push(filesList(repo, tree));
 
 function repoList() {
   var body = [
@@ -41,7 +41,8 @@ function repoList() {
 
 function historyList(repo) {
   var list = [];
-  var chunkSize = 5;
+  var $ = {};
+  var chunkSize = 9;
   var stream = data.historyStream(repo.db, repo.db.refs["refs/heads/master"]);
   more();
   var body = [
@@ -51,7 +52,7 @@ function historyList(repo) {
     }),
     ui.list(list, load)
   ];
-  return domBuilder(ui.page(body, "dark"));
+  return domBuilder(ui.page(body), $);
 
   function more() {
     for (var i = 0; i < chunkSize; ++i) {
@@ -67,14 +68,23 @@ function historyList(repo) {
       });
     }
     list.push({
-      title: "Load More...",
+      title: ["span$more", "Load More..."],
       data: []
     });
   }
 
-
   function load(repo, commit) {
-    if (!repo) return;
+    if (!repo) {
+      var li = $.more.parentNode;
+      while (li.tagName !== "LI") li = li.parentNode;
+      var ul = li.parentNode;
+      ul.removeChild(li);
+      list = [];
+      more();
+      $.more = null;
+      ul.appendChild(domBuilder(ui.arrMap(list, ui.listItem, load), $));
+      return;
+    }
     ui.push(commitPage(repo, commit));
   }
 }
@@ -136,7 +146,6 @@ function filesList(repo, tree) {
       back: ui.pop,
     }),
     ui.list(tree.map(function (file) {
-      console.log(file);
       var entry = {
         title: file.name,
         sub: file.hash,
@@ -178,7 +187,7 @@ function filesList(repo, tree) {
       return entry;
     }), load)
   ];
-  return domBuilder(ui.page(body));
+  return domBuilder(ui.page(body, "dark"));
   function load(file) {
     if (file.mode === 040000) {
       var tree = repo.db.objects[file.hash].body;
