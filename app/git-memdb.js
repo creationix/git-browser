@@ -9,6 +9,7 @@ module.exports = function () {
   var db = {};
 
   return {
+    db: db,
     write: write,
     read: read,
     save: save,
