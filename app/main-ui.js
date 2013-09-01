@@ -191,13 +191,19 @@ function showMarkdown(repo, name, text) {
 }
 
 function showText(repo, name, text) {
+  var type = guessType({name:name});
+  var css = {whiteSpace:"pre-wrap"};
+  if (type === "file-code") {
+    css.fontFamily = "Ubuntu Mono, Monaco, monospace";
+  }
+
   var body = [
     ui.header({
       title: name + " - " + repo.name,
       back: ui.pop,
     }),
     ["article.content.scrollable.header",
-      ["p", {css:{whiteSpace:"pre-wrap"}}, text]
+      ["p", {css:css}, text]
     ]
   ];
   return domBuilder(ui.page(body, "dark"));
