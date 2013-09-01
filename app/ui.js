@@ -134,7 +134,6 @@ function listItem(item, onclick) {
     line = ["a", {href:"#",onclick: wrap(item, onclick)}, line];
   }
   line = ["li", line];
-  console.log(line)
   return line;
 }
 
