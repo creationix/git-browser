@@ -5,11 +5,6 @@ var pathJoin = require('path').join;
 var mine = require('./mine.js');
 var modules = {};
 
-exports.add = add;
-function add(name) {
-
-}
-
 exports.flush = flush;
 function flush() {
   var output = modules;
@@ -17,6 +12,7 @@ function flush() {
   return output;
 }
 
+exports.add = add;
 function add(path) {
   if (path in modules) return path;
   var base = dirname(path);
@@ -27,7 +23,7 @@ function add(path) {
     var name = match.name;
     var newPath = baseResolve(base, name);
     if (!newPath) {
-      console.error("Can't find " + name + " relative to " + base);
+      console.error("Warning: Can't find " + name + " relative to " + base);
       return;
     }
     var offset = adjust + match.offset;
@@ -100,7 +96,7 @@ if (process.argv[1] === __filename) {
   for (var i = 2; i < process.argv.length; i++) {
     codes.push("require(" + JSON.stringify(process.argv[i]) + ");");
   }
-  code = "(function (realRequire) {" + indent(codes.join("\n\n")) + "}(typeof require === 'function' ? require : undefined));";
+  var code = "(function (realRequire) {" + indent(codes.join("\n\n")) + "}(typeof require === 'function' ? require : undefined));";
   console.log(code);
 }
 
