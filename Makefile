@@ -10,7 +10,7 @@ chrome: ${CHROME} ${CHROME}/app.js ${CHROME}/manifest.json ${CHROME}/background.
 chrome-zip: chrome
 	cd ${CHROME} && rm -f ${CHROME_ZIP} && zip -o -r ${CHROME_ZIP} .
 
-firefox-zip: chrome
+firefox-zip: firefox
 	cd ${FIREFOX} && rm -f ${FIREFOX_ZIP} && zip -o -r ${FIREFOX_ZIP} .
 
 ${CHROME}:
