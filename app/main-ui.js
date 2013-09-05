@@ -1,7 +1,6 @@
 var domBuilder = require('dombuilder');
 var ui = require('./ui.js');
 var data = require('./data.js');
-var md = require('markdown').markdown;
 
 ui.push(repoList());
 // var repo = data.repos[1];
@@ -12,32 +11,48 @@ ui.push(repoList());
 // var tree = repo.db.objects[commit.tree].body;
 // ui.push(filesList(repo, tree));
 
+function onclick(handler) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  return function (evt) {
+    evt.preventDefault();
+    return handler.apply(this, args);
+  };
+}
+
 function repoList() {
-  var body = [
-    ui.header({
-      title: "Git Repositories",
-      actions: {
-        "octicon octicon-repo-create": add,
-      }
-    }),
-    ui.list(data.repos.map(function (repo) {
-      return {
-        title: repo.name,
-        sub: repo.description,
-        icon: "octicon octicon-repo",
-        iconRight: "octicon octicon-chevron-right",
-        data: [repo]
-      };
-    }), load)
-  ];
-  return domBuilder(ui.page(body));
+  return domBuilder(["section.page", {"data-position": "current"},
+    ["header",
+      ["button", {onclick:onclick(add)}, "➕"],
+      ["h1", "Git Repositories"]
+    ],
+    ["ul.content.header", data.repos.map(function (repo) {
+      return ["li", { href:"#", onclick: onclick(load, repo) },
+        [".icon.right", "❱"],
+        ["p", repo.name],
+        ["p", repo.description]
+      ];
+    })]
+  ]);
 
-
-
-  function add() {}
   function load(repo) {
     ui.push(historyList(repo));
   }
+
+  function add() {
+    ui.push(addPage());
+  }
+}
+
+function addPage() {
+  return domBuilder(["section.page",
+    ["header",
+      ["button.back", {onclick: ui.pop}, "❰"],
+      ["h1", "Clone Repository"]
+    ],
+    ["content.header",
+      ["h2", "TODO: Implement me"]
+    ]
+  ]);
 }
 
 function historyList(repo) {
@@ -45,59 +60,56 @@ function historyList(repo) {
   var $ = {};
   var chunkSize = 9;
   var stream = data.historyStream(repo.db, repo.db.refs["refs/heads/master"]);
-  more();
-  var body = [
-    ui.header({
-      title: repo.name,
-      back: ui.pop
-    }),
-    ui.list(list, load)
-  ];
-  return domBuilder(ui.page(body), $);
+  enqueue();
+  return domBuilder(["section.page",
+    ["header",
+      ["button.back", {onclick: ui.pop}, "❰"],
+      ["h1", repo.name]
+    ],
+    ["ul.content.header", list]
+  ], $);
 
-  function more() {
+  function enqueue() {
     for (var i = 0; i < chunkSize; ++i) {
       var commit = stream.next();
       if (!commit) return;
       var title = truncate(commit.message, 80);
-      list.push({
-        title: title,
-        sub: commit.hash,
-        icon: "octicon octicon-git-commit",
-        iconRight: "octicon octicon-chevron-right",
-        data: [repo, commit]
-      });
+      list.push(["li", { href:"#", onclick: onclick(load, commit) },
+        [".icon.right", "❱"],
+        ["p", title],
+        ["p", commit.hash]
+      ]);
     }
-    list.push({
-      title: ["span$more", "Load More..."],
-      data: []
-    });
+    list.push(["li", { href:"#", onclick: onclick(more) },
+      ["p$more", "Load More..."]
+    ]);
   }
 
-  function load(repo, commit) {
-    if (!repo) {
-      var li = $.more.parentNode;
-      while (li.tagName !== "LI") li = li.parentNode;
-      var ul = li.parentNode;
-      ul.removeChild(li);
-      list = [];
-      more();
-      $.more = null;
-      ul.appendChild(domBuilder(ui.arrMap(list, ui.listItem, load), $));
-      return;
-    }
+  function more() {
+    var li = $.more;
+    while (li.tagName !== "LI") li = li.parentNode;
+    var ul = li.parentNode;
+    ul.removeChild(li);
+    list = [];
+    enqueue();
+    $.more = null;
+    ul.appendChild(domBuilder(list, $));
+    return;
+  }
+
+  function load(commit) {
     ui.push(commitPage(repo, commit));
   }
 }
 
 function commitPage(repo, commit) {
   var details = [];
-  var body = [
-    ui.header({
-      title: repo.name,
-      back: ui.pop
-    }),
-    ["article.content.scrollable.header", details]
+  var body = ["section.page",
+    ["header",
+      ["button.back", {onclick: ui.pop}, "❰"],
+      ["h1", repo.name]
+    ],
+    [".content.header", details]
   ];
   details.push(
     ["header", ["h2", "message:"]],
@@ -127,7 +139,7 @@ function commitPage(repo, commit) {
     ["header", ["h2", {css:{marginTop:0}}, "hash:"]],
     ["button", {disabled:true}, commit.hash]);
 
-  return domBuilder(ui.page(body));
+  return domBuilder(body);
 
   function enter() {
     var tree = repo.db.objects[commit.tree].body;
@@ -143,105 +155,26 @@ function commitPage(repo, commit) {
 }
 
 function filesList(repo, tree) {
-  var body = [
-    ui.header({
-      title: repo.name,
-      back: ui.pop,
-    }),
-    ui.list(tree.map(function (file) {
-      var type = guessType(file);
-      var entry = {
-        title: file.name,
-        sub: file.hash,
-        data: [file, type],
-        icon: "octicon octicon-" + type
-      };
-      if (type === "file-directory") {
-        entry.iconRight = "octicon octicon-chevron-right";
-      }
-      return entry;
-    }), load)
-  ];
-  return domBuilder(ui.page(body, "dark"));
-  function load(file, type) {
-    if (type === "file-directory") {
-      var tree = repo.db.objects[file.hash].body;
-      return ui.push(filesList(repo, tree));
-    }
-    if (type === "file-code" || type === "file-text") {
-      var body = repo.db.objects[file.hash].body;
-      if (/.(md|markdown)$/i.test(file.name)) {
-        return ui.push(showMarkdown(repo, file.name, body));
-      }
-      return ui.push(showText(repo, file.name, body));
-    }
+  return domBuilder(["section.page",
+    ["header",
+      ["button.back", {onclick: ui.pop}, "❰"],
+      ["h1", repo.name]
+    ],
+    ["ul.content.header", tree.map(function (file) {
+      return ["li", { href:"#", onclick: onclick(load, file) },
+        [".icon.right", "❱"],
+        ["p", file.name],
+        ["p", file.hash]
+      ];
+    })]
+  ]);
+  function load(file) {
+    console.log("TODO: load file");
   }
-}
-
-function showMarkdown(repo, name, text) {
-
-  var body = [
-    ui.header({
-      title: name + " - " + repo.name,
-      back: ui.pop,
-    }),
-    ["article.content.scrollable.header",
-      md.toHTMLTree(md.parse(text))
-    ]
-  ];
-  return domBuilder(ui.page(body, "dark"));
-}
-
-function showText(repo, name, text) {
-  var type = guessType({name:name});
-  var css = {whiteSpace:"pre-wrap"};
-  if (type === "file-code") {
-    css.fontFamily = "Ubuntu Mono, Monaco, monospace";
-  }
-
-  var body = [
-    ui.header({
-      title: name + " - " + repo.name,
-      back: ui.pop,
-    }),
-    ["article.content.scrollable.header",
-      ["p", {css:css}, text]
-    ]
-  ];
-  return domBuilder(ui.page(body, "dark"));
 }
 
 function truncate(message, limit) {
   var title = message.split(/[\r\n]/)[0];
   if (title.length > limit) title = title.substr(0, limit - 3) + "...";
   return title;
-}
-
-function guessType(file) {
-  if (file.mode === 040000) {
-    return "file-directory";
-  }
-  if (file.mode === 0120000) {
-    if (/\.[a-z0-9]{1,7}$/i.test(file.name)) {
-      return "symlink-file";
-    }
-    return "symlink-directory";
-  }
-  if (/\.(png|jpg|jpeg|gif|bmp|m4a|avi|mpeg|ogg|mp3|aac|svg)$/i.test(file.name)) {
-    return"file-media";
-  }
-  if (/\.(js|css|lua|html|md|markdown|json|rb|py)$/i.test(file.name)) {
-    return"file-code";
-  }
-  if (/\.(pdf)$/i.test(file.name)) {
-    return"file-pdf";
-  }
-  if (/\.(txt|log)$/i.test(file.name)) {
-    return"file-text";
-  }
-  if (/\.(zip)$/i.test(file.name)) {
-    return"file-zip";
-  }
-  return"file-binary";
-
 }
