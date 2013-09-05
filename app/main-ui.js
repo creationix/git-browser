@@ -107,7 +107,9 @@ function commitPage(repo, commit) {
     ["button.recommend", {onclick: enter}, commit.tree]);
   if (commit.parents) {
     details.push(["header",
-      ["h2", {css:{marginTop:0}}, "parent" + (commit.parents.length === 1 ? "" : "s") + ":"]
+      ["h2", {css:{marginTop:0}},
+        "parent" + (commit.parents.length === 1 ? "" : "s") + ":"
+      ]
     ]);
     commit.parents.forEach(function (parent) {
       details.push(["button", {onclick: ascend(parent)}, parent]);
