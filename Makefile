@@ -5,7 +5,7 @@ FIREFOX_ZIP=../git-browser-firefox.zip
 
 all: chrome chrome-zip firefox firefox-zip
 
-chrome: ${CHROME} ${CHROME}/app.js ${CHROME}/manifest.json ${CHROME}/background.js ${CHROME}/index.html ${CHROME}/icons ${CHROME}/bb ${CHROME}/style.css ${CHROME}/octicons
+chrome: ${CHROME} ${CHROME}/app.js ${CHROME}/manifest.json ${CHROME}/background.js ${CHROME}/index.html ${CHROME}/icons ${CHROME}/style.css
 
 chrome-zip: chrome
 	cd ${CHROME} && rm -f ${CHROME_ZIP} && zip -o -r ${CHROME_ZIP} .
@@ -28,19 +28,13 @@ ${CHROME}/background.js: chromeapp/background.js
 ${CHROME}/index.html: app/index.html
 	cp app/index.html ${CHROME}/index.html
 
-${CHROME}/style.css: app/style.css
-	cp app/style.css ${CHROME}/style.css
+${CHROME}/style.css: app/style.less app/transitions.less
+	lessc app/style.less > ${CHROME}/style.css
 
 ${CHROME}/icons: icons
 	cp -r icons ${CHROME}/icons
 
-${CHROME}/bb: bb
-	cp -r bb ${CHROME}/bb
-
-${CHROME}/octicons: octicons
-	cp -r octicons ${CHROME}/octicons
-
-firefox: ${FIREFOX} ${FIREFOX}/app.js ${FIREFOX}/manifest.webapp ${FIREFOX}/index.html ${FIREFOX}/icons ${FIREFOX}/bb ${FIREFOX}/style.css ${FIREFOX}/octicons
+firefox: ${FIREFOX} ${FIREFOX}/app.js ${FIREFOX}/manifest.webapp ${FIREFOX}/index.html ${FIREFOX}/icons ${FIREFOX}/style.css
 
 ${FIREFOX}:
 	mkdir -p ${FIREFOX}
@@ -54,17 +48,11 @@ ${FIREFOX}/manifest.webapp: mozapp/manifest.webapp
 ${FIREFOX}/index.html: app/index.html
 	cp app/index.html ${FIREFOX}/index.html
 
-${FIREFOX}/style.css: app/style.css
-	cp app/style.css ${FIREFOX}/style.css
+${FIREFOX}/style.css: app/style.less app/transitions.less
+	lessc app/style.less > ${FIREFOX}/style.css
 
 ${FIREFOX}/icons: icons
 	cp -r icons ${FIREFOX}/icons
-
-${FIREFOX}/bb: bb
-	cp -r bb ${FIREFOX}/bb
-
-${FIREFOX}/octicons: octicons
-	cp -r octicons ${FIREFOX}/octicons
 
 clean:
 	rm -rf build
