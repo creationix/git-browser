@@ -173,34 +173,32 @@ module.exports = function (backend) {
         ["button.back", {onclick: ui.pop}, "❰"],
         ["h1", repo.name]
       ],
-      [".content.header", details]
+      ["form.content.header", details]
     ];
     details.push(
-      ["header", ["h2", "message:"]],
+      ["label", "Message"],
       ["p", {css:{whiteSpace:"pre-wrap"}}, commit.message]);
     details.push(
-      ["header", ["h2", {css:{marginTop:0}}, "tree:"]],
+      ["label", "Tree"],
       ["button.recommend", {onclick: enter}, commit.tree]);
     if (commit.parents) {
-      details.push(["header",
-        ["h2", {css:{marginTop:0}},
-          "parent" + (commit.parents.length === 1 ? "" : "s") + ":"
-        ]
+      details.push(["label",
+        "Parent" + (commit.parents.length === 1 ? "" : "s")
       ]);
       commit.parents.forEach(function (parent) {
         details.push(["button", {onclick: ascend(parent)}, parent]);
       });
     }
     details.push(
-      ["header", ["h2", {css:{marginTop:0}}, "author:"]],
+      ["label", "Author"],
       ["p", commit.author]);
     if (commit.author !== commit.committer) {
       details.push(
-        ["header", ["h2", {css:{marginTop:0}}, "committer:"]],
+        ["label", "Committer"],
         ["p", commit.committer]);
     }
     details.push(
-      ["header", ["h2", {css:{marginTop:0}}, "hash:"]],
+      ["label", "Hash"],
       ["button", {disabled:true}, commit.hash]);
 
     return domBuilder(body);

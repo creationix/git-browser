@@ -72,11 +72,13 @@ body, .content, .page {
   display: block;
   padding-left: 2rem;
   padding-right: 2rem;
-  label {
+  label, button {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
     display: block;
+  }
+  label {
     font-size: 1.8rem;
     line-height: 2.2rem;
     color: #000;
@@ -89,7 +91,10 @@ body, .content, .page {
     padding: 0 1rem;
     width: 100%;
   }
-  input {
+  p {
+    font-size: 1.5rem;
+  }
+  input, button {
     -webkit-appearance: none; -moz-appearance: none;
     display: block;
     margin: 0 0;
@@ -101,7 +106,7 @@ body, .content, .page {
     border: 1px solid #bbb;
     border-radius: 0.5rem;
   }
-  input[type=submit] {
+  input[type=submit], button {
     border-radius: 1rem;
     margin: 1rem 0;
     color: #fff;

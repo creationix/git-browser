@@ -189,7 +189,11 @@ require('./main.js')({
     }
   },
   getCommit: function (repo, hash, callback) {
-    console.log("TODO: Implement getCommit");
+    repo.loadCommit(hash, function (err, commit) {
+      if (err) return callback(err);
+      commit.hash = hash;
+      callback(null, commit);
+    });
   },
   getTree: function (repo, hash, callback) {
     console.log("TODO: Implement getTree");
