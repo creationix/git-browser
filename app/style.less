@@ -4,12 +4,11 @@ html {
   font-size: 10px;
   font-family: sans-serif;
 }
-body,
-.content,
-.page {
+body, .content, .page {
   margin: 0;
   font-size: 1rem;
   position: absolute;
+  overflow: hidden;
   left: 0;
   right: 0;
   top: 0;
@@ -26,11 +25,14 @@ body,
   text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
   height: 5rem;
   line-height: 5rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .page > header h1 {
   margin: 0 2rem;
   padding: 0;
-  font-size: 3rem;
+  font-size: 2.5rem;
 }
 .page > header button {
   position: relative;
