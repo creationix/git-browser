@@ -196,6 +196,10 @@ require('./main.js')({
     });
   },
   getTree: function (repo, hash, callback) {
-    console.log("TODO: Implement getTree");
+    repo.loadTree(hash, function (err, tree) {
+      if (err) return callback(err);
+      tree.hash = hash;
+      callback(null, tree);
+    });
   }
 });
