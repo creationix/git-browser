@@ -110,6 +110,7 @@ module.exports = function (backend) {
 
   function historyList(repo, stream) {
     var $ = {};
+    var first = true;
     var chunkSize = 9;
     var root = domBuilder(["section.page",
       ["header",
@@ -120,10 +121,11 @@ module.exports = function (backend) {
         ["li$li", "Loading..."]
       ]
     ], $);
-    enqueue();
+    enqueue(true);
     return root;
 
-    function enqueue() {
+    function enqueue(isFirst) {
+      first = isFirst;
       var left = chunkSize;
       stream.read(onRead);
       function onRead(err, commit) {
@@ -150,7 +152,7 @@ module.exports = function (backend) {
       ];
       $.ul.removeChild($.li);
       $.ul.appendChild(domBuilder(list, $));
-      $.ul.scrollTop = $.ul.scrollHeight;
+      if (!first) $.ul.scrollTop = $.ul.scrollHeight;
     }
 
     function appendMore() {
@@ -173,7 +175,7 @@ module.exports = function (backend) {
         ["button.back", {onclick: ui.pop}, "❰"],
         ["h1", repo.name]
       ],
-      ["form.content.header", details]
+      ["form.content.header", {onsubmit: prevent}, details]
     ];
     details.push(
       ["label", "Message"],
@@ -202,6 +204,10 @@ module.exports = function (backend) {
       ["button", {disabled:true}, commit.hash]);
 
     return domBuilder(body);
+
+    function prevent(evt) {
+      evt.preventDefault();
+    }
 
     function enter() {
       backend.getTree(repo, commit.tree, function (err, tree) {
