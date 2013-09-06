@@ -1,5 +1,10 @@
 @import "transitions.less";
 
+*, *:before, *:after {
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+ }
+
 html {
   font-size: 10px;
   font-family: MozTT, sans-serif;
@@ -22,8 +27,10 @@ body, .content, .page {
   bottom: 0;
   &> header {
     background: linear-gradient(to bottom, @top 0%, @bottom 100%);
+    border-bottom: 1px solid darken(@bottom, 10%);
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
     color: #fff;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
     height: 5rem;
     line-height: 5rem;
     text-overflow: ellipsis;
@@ -74,6 +81,7 @@ ul.content {
   li {
     height: 6rem;
     padding: 0 2rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
     .icon {
       line-height: 6rem;
       font-size: 2rem;
