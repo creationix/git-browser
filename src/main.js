@@ -233,14 +233,21 @@ module.exports = function (backend) {
         ["h1", repo.name]
       ],
       ["ul.content.header", tree.map(function (file) {
+        console.log(file);
         return ["li", { href:"#", onclick: onclick(load, file) },
-          [".icon.right", "❱"],
+          (file.mode === 16384 ? [".icon.right", "❱"] : []),
           ["p", file.name],
           ["p", file.hash]
         ];
       })]
     ]);
     function load(file) {
+      if (file.mode === 16384) {
+        return backend.getTree(repo, file.hash, function (err, tree) {
+          if (err) throw err;
+          ui.push(filesList(repo, tree));
+        });
+      }
       console.log("TODO: load file");
     }
   }
