@@ -11,7 +11,9 @@ T("all", ["web", "moz", "chrome"]);
 function base(bootstrap, targetDir) {
   return T.parallel(
     T.copy("res", targetDir),
-    T.lessc("src/" + bootstrap + ".less", targetDir + "/style.css"),
+    T.newer("src", /\.less$/, targetDir + "/style.css", 
+      T.lessc("src/" + bootstrap + ".less", targetDir + "/style.css")
+    ),
     T.build("src/" + bootstrap + ".js", targetDir + "/app.js")
   );
 }

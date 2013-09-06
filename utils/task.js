@@ -20,6 +20,7 @@ task.execute = execute;
 task.copy = copy;
 task.lessc = lessc;
 task.build = build;
+task.newer = newer;
 
 function task(name, deps, fn) {
   if (typeof deps === "function" && typeof fn === "undefined") {
@@ -299,52 +300,51 @@ function copyDir(source, dest, names, callback) {
   }
 }
 
-function newer(sourceDir, pattern, dest, callback) {
-  fs.stat(dest, function (err, stat) {
-    var mtime;
-    if (err) {
-      if (err.code === "ENOENT") return callback(null, true);
-      return callback(err);
-    }
-    mtime = stat.mtime;
-    var left;
-    var done = false;
-    fs.readdir(sourceDir, function (err, names) {
-      if (err) return callback(err);
-      names = names.filter(function (name) {
-        return pattern.test(name);
-      });
-      var length = names.length;
-      if (!length) return callback();
-      left = length;
-      for (var i = 0; i < length; ++i) {
-        fs.stat(pathJoin(sourceDir, names[i]), check);
-      }
-    });
-    function check(err, stat) {
-      if (done) return;
+function newer(sourceDir, pattern, dest, cont) {
+  return function (callback) {
+    fs.stat(dest, function (err, stat) {
+      var mtime;
       if (err) {
-        done = true;
+        if (err.code === "ENOENT") return cont(callback);
         return callback(err);
       }
-      if (stat.mtime > mtime) {
-        done = true;
-        return callback(null, true);
+      mtime = stat.mtime;
+      var left;
+      var done = false;
+      fs.readdir(sourceDir, function (err, names) {
+        if (err) return callback(err);
+        names = names.filter(function (name) {
+          return pattern.test(name);
+        });
+        var length = names.length;
+        if (!length) return callback();
+        left = length;
+        for (var i = 0; i < length; ++i) {
+          fs.stat(pathJoin(sourceDir, names[i]), check);
+        }
+      });
+      function check(err, stat) {
+        if (done) return;
+        if (err) {
+          done = true;
+          return callback(err);
+        }
+        if (stat.mtime > mtime) {
+          done = true;
+          return cont(callback);
+        }
+        if (!--left) {
+          done = true;
+          return callback();
+        }
       }
-      if (!--left) {
-        done = true;
-        return callback();
-      }
-    }
-  });
+    });
+  };
 }
 
 function lessc(source, dest, callback) {
-  if (!callback) return lessc.bind(this, source, dest);
-  newer(dirname(source), /\.less$/, dest, function (err, go) {
-    if (err) return callback(err);
-    if (!go) return callback();
-    parallelData([
+  if (callback) return lessc(source, dest)(callback);
+  return parallelData([
       fs.readFile.bind(fs, source, "utf8"),
       mkdirp(dirname(dest))
     ], function (code) {
@@ -362,23 +362,18 @@ function lessc(source, dest, callback) {
           });
         });
       };
-    })(callback);
   });
 }
 
 function build(source, dest, callback) {
   if (!callback) return build.bind(this, source, dest);
-  newer(dirname(source), /\.js$/, dest, function (err, go) {
+  require('./find-deps.js').build(source, function (err, code) {
     if (err) return callback(err);
-    if (!go) return callback();
-    require('./find-deps.js').build(source, function (err, code) {
+    mkdirp(dirname(dest), function (err) {
       if (err) return callback(err);
-      mkdirp(dirname(dest), function (err) {
+      fs.writeFile(dest, code, function (err) {
         if (err) return callback(err);
-        fs.writeFile(dest, code, function (err) {
-          if (err) return callback(err);
-          console.log("./find-deps.js %s > %s", source, dest);
-        });
+        console.log("./find-deps.js %s > %s", source, dest);
       });
     });
   });
