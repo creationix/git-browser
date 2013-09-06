@@ -1,25 +1,32 @@
 #!/usr/bin/env node
-
 var T = require('./utils/task.js');
+
+// Override paths using environment variables
+var WEBDIR = process.env.WEBDIR || "build/web";
+var MOZDIR = process.env.MOZDIR || "build/moz";
+var CHROMEDIR = process.env.CHROMEDIR || "build/chrome";
 
 T("all", ["web-app", "firefox-app", "chrome-app"]);
 
-T("web-app", T.parallel(
-  T.copy("res", "build/web-app"),
-  T.lessc("src/style.less", "build/web-app/style.css"),
-  T.build("src/web.js", "build/web-app/app.js")
-));
+function base(bootstrap, targetDir) {
+  return T.parallel(
+    T.copy("res", targetDir),
+    T.lessc("src/style.less", targetDir + "/style.css"),
+    T.build("src/" + bootstrap, targetDir + "/app.js")
+  );
+}
+
+T("web-app", base("web.js", WEBDIR));
 
 T("firefox-app", T.parallel(
-  T.copy("res", "build/firefox-app"),
-  T.lessc("src/style.less", "build/firefox-app/style.css"),
-  T.build("src/firefox.js", "build/firefox-app/app.js")
+  base("firefox.js", MOZDIR),
+  T.copy("src/manifest.webapp", MOZDIR + "/manifest.webapp")
 ));
 
 T("chrome-app", T.parallel(
-  T.copy("res", "build/chrome-app"),
-  T.lessc("src/style.less", "build/chrome-app/style.css"),
-  T.build("src/chrome.js", "build/chrome-app/app.js")
+  base("chrome.js", CHROMEDIR),
+  T.copy("src/manifest.json", CHROMEDIR + "/manifest.json"),
+  T.copy("src/background.js", CHROMEDIR + "/background.js")
 ));
 
 T("clean", T.rmrf("build"));
