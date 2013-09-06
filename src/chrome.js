@@ -7,13 +7,21 @@ require('js-git/lib/platform.js')({
   bops: require('./bops/index.js'),
   inflate: require('./inflate.js'),
   deflate: require('./deflate.js'),
-  trace: require('./trace.js'),
+  // trace: require('./trace.js'),
+  trace: false,
   agent: "jsgit/" + require('js-git/package.json').version,
 });
 
 var fsDb = require('js-git/lib/fs-db.js');
 var repoify = require('js-git/lib/repo.js');
 var gitWebfs = require('./git-webfs.js');
+var tcpProto = require('js-git/protocols/tcp.js');
+var serial = require('js-git/helpers/serial.js');
+var parallel = require('js-git/helpers/parallel.js');
+var parallelData = require('js-git/helpers/parallel-data.js');
+var serial = require('js-git/helpers/serial.js');
+var parallel = require('js-git/helpers/parallel.js');
+var parallelData = require('js-git/helpers/parallel-data.js');
 
 var fs;
 function getFs(callback) {
@@ -46,11 +54,53 @@ function isGitDir(path) {
   return (/\.git$/).test(path);
 }
 
+var progMatch = /^([^:]*):[^\(]*\(([0-9]+)\/([0-9]+)\)/;
+var progMatchBasic = /^([^:]*):/;
+function parseProgress(string) {
+  var match = string.match(progMatch) ||
+              string.match(progMatchBasic);
+  if (!match) return {};
+  return {
+    label: match[1],
+    value: parseInt(match[2], 10),
+    max: parseInt(match[3], 10)
+  };
+}
+
 require('./main.js')({
   // opts are host, path, and description
   addRepo: function (opts, onProgress, callback) {
-    console.log(opts);
-    console.log("TODO: Implement addRepo");
+    getFs(function (err, fs) {
+      if (err) return callback(err);
+      var path = opts.hostname + opts.pathname;
+      var description = opts.description || "git://" + path;
+      path = path.replace(/\//g, "_");
+      var repo = repoify(fsDb(fs(path), true));
+      var config = {
+        includeTag: true,
+        onProgress: function (progress) {
+          progress = parseProgress(progress);
+          onProgress(progress.label, progress.value, progress.max);
+        }
+      };
+      var connection = tcpProto(opts);
+      parallelData({
+        init: repo.init(),
+        pack: connection.fetch(config),
+      }, function (err, result) {
+        if (err) throw err;
+        serial(
+          parallel(
+            repo.importRefs(result.pack.refs),
+            repo.unpack(result.pack, config)
+          ),
+          connection.close()
+        )(function (err) {
+          if (err) throw err;
+          console.log("DONE");
+        });
+      });
+    });
   },
   getRepos: function (callback) {
     getFs(function (err, fs) {

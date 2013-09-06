@@ -50,23 +50,23 @@ module.exports = function (backend) {
         ["h1", "Clone Repository"]
       ],
       ["form.content.header", {onsubmit: submit},
-        ["label", {for: "host"}, "Host"],
+        ["label", {for: "hostname"}, "Host"],
         ["input", {
           type: "text",
-          name: "host",
+          name: "hostname",
           placeholder: "github.com",
           value: "github.com",
           required: true
         }],
-        ["label", {for: "path"}, "Path"],
+        ["label", {for: "pathname"}, "Path"],
         ["input", {
           type: "text",
-          name: "path",
-          placeholder: "creationix/conquest",
-          value: "creationix/conquest",
+          name: "pathname",
+          placeholder: "/creationix/conquest.git",
+          value: "/creationix/conquest.git",
           required: true
         }],
-        ["label", {for: "path"}, "Description"],
+        ["label", {for: "description"}, "Description"],
         ["input", {
           type: "text",
           name: "description",
@@ -77,6 +77,7 @@ module.exports = function (backend) {
           type: "submit",
           value: "Clone"
         }],
+        ["label$label"],
         ["progress$progress", {css: {display: "none"}}]
       ]
     ], $);
@@ -84,10 +85,11 @@ module.exports = function (backend) {
       evt.preventDefault();
       $.progress.style.display = null;
       backend.addRepo({
-        host: this.host.value,
-        path: this.path.value,
+        hostname: this.hostname.value,
+        pathname: this.pathname.value,
         description: this.description.value
-      }, function (type, value, max) {
+      }, function (label, value, max) {
+        $.label.textContent = label;
         $.progress.setAttribute("max", max);
         $.progress.setAttribute("value", value);
       }, function (err, repo) {
