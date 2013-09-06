@@ -18,7 +18,7 @@ module.exports = function (backend) {
   function repoList(repos) {
     return domBuilder(["section.page", {"data-position": "current"},
       ["header",
-        ["button", {onclick:onclick(add)}, "⊕"],
+        (backend.addRepo ? ["button", {onclick:onclick(add)}, "⊕"] : []),
         ["h1", "Git Repositories"]
       ],
       ["ul.content.header", repos.map(function (repo) {
