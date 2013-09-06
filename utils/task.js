@@ -29,7 +29,7 @@ function task(name, deps, fn) {
   if (deps && deps.length) {
     dependencies[name] = deps;
   }
-  tasks[name] = fn;
+  tasks[name] = fn || call;
 }
 
 function wrap(fn) {

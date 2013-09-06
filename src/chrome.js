@@ -7,4 +7,4 @@
 //   trace: require('../common/trace.js'),
 //   agent: "jsgit/" + require('js-git/package.json').version,
 // });
-require('../app/main-ui.js');
+require('./main.js');

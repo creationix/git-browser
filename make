@@ -7,10 +7,24 @@ var parallel = task.parallel;
 var lessc = task.lessc;
 var build = task.build;
 
+task("all", ["web-app", "firefox-app", "chrome-app"]);
+
 task("web-app", parallel(
   copy("res", "build/web-app"),
   lessc("src/style.less", "build/web-app/style.css"),
   build("src/web.js", "build/web-app/app.js")
+));
+
+task("firefox-app", parallel(
+  copy("res", "build/firefox-app"),
+  lessc("src/style.less", "build/firefox-app/style.css"),
+  build("src/firefox.js", "build/firefox-app/app.js")
+));
+
+task("chrome-app", parallel(
+  copy("res", "build/chrome-app"),
+  lessc("src/style.less", "build/chrome-app/style.css"),
+  build("src/chrome.js", "build/chrome-app/app.js")
 ));
 
 task("clean", rmrf("build"));

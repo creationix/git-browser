@@ -9,7 +9,7 @@ Browse Git Repos offline.
 git clone git@github.com:creationix/git-browser.git
 cd git-browser
 npm install
-make firefox
+./make firefox-app
 ```
 
 Then add `build/firefoxapp/manifest.webapp` to the simulator and push it to a device.
@@ -20,7 +20,7 @@ Then add `build/firefoxapp/manifest.webapp` to the simulator and push it to a de
 git clone git@github.com:creationix/git-browser.git
 cd git-browser
 npm install
-make chrome
+./make chrome-app
 ```
 
 Then go to <chrome://extensions/> and "Load unpacked extension..." and browse to `build/chromeapp`.

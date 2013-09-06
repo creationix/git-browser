@@ -1,6 +1,6 @@
 #!/bin/sh
-./make.js $@
+./make $@
 while true
   do inotifywait -e create -e delete -e modify -q -r src res
-  ./make.js $@
+  ./make $@
 done
