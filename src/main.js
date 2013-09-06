@@ -44,6 +44,7 @@ module.exports = function (backend) {
 
   function addPage() {
     var $ = {};
+    var working = false;
     return domBuilder(["section.page",
       ["header",
         ["button.back", {onclick: ui.pop}, "❰"],
@@ -73,7 +74,7 @@ module.exports = function (backend) {
           placeholder: "Enter a short description here",
           value: "A remake of the classic Lords of Conquest for C64 implemented in JavaScript"
         }],
-        ["input", {
+        ["input$submit", {
           type: "submit",
           value: "Clone"
         }],
@@ -83,6 +84,9 @@ module.exports = function (backend) {
     ], $);
     function submit(evt) {
       evt.preventDefault();
+      if (working) return;
+      working = true;
+      $.submit.setAttribute("disabled", true);
       $.progress.style.display = null;
       backend.addRepo({
         hostname: this.hostname.value,
@@ -94,7 +98,12 @@ module.exports = function (backend) {
         $.progress.setAttribute("value", value);
       }, function (err, repo) {
         if (err) throw err;
-        console.log(repo);
+        ui.pop();
+        ui.pop();
+        backend.getRepos(function (err, repos) {
+          if (err) throw err;
+          ui.push(repoList(repos));
+        });
       });
     }
   }
@@ -103,41 +112,53 @@ module.exports = function (backend) {
     var list = [];
     var $ = {};
     var chunkSize = 9;
-    enqueue();
-    return domBuilder(["section.page",
+    var root = domBuilder(["section.page",
       ["header",
         ["button.back", {onclick: ui.pop}, "❰"],
         ["h1", repo.name]
       ],
-      ["ul.content.header", list]
+      ["ul$ul.content.header",
+        ["li$li", "Loading..."]
+      ]
     ], $);
+    enqueue();
+    return root;
 
     function enqueue() {
-      for (var i = 0; i < chunkSize; ++i) {
-        var commit = stream.next();
-        if (!commit) return;
+      var left = chunkSize;
+      stream.read(onRead);
+      function onRead(err, commit) {
+        if (err) throw err;
+        if (commit === undefined) {
+          $.ul.removeChild($.li);
+          return;
+        }
         var title = truncate(commit.message, 80);
-        list.push(["li", { href:"#", onclick: onclick(load, commit) },
+        append(title, commit);
+        if (--left) return stream.read(onRead);
+        appendMore();
+      }
+    }
+
+    function append(title, commit) {
+      var list = [
+        ["li", { href:"#", onclick: onclick(load, commit) },
           [".icon.right", "❱"],
           ["p", title],
           ["p", commit.hash]
-        ]);
-      }
-      list.push(["li", { href:"#", onclick: onclick(more) },
-        ["p$more", "Load More..."]
-      ]);
+        ],
+        ["li$li", "Loading..."]
+      ];
+      $.ul.removeChild($.li);
+      $.ul.appendChild(domBuilder(list, $));
     }
 
-    function more() {
-      var li = $.more;
-      while (li.tagName !== "LI") li = li.parentNode;
-      var ul = li.parentNode;
-      ul.removeChild(li);
-      list = [];
-      enqueue();
-      $.more = null;
-      ul.appendChild(domBuilder(list, $));
-      return;
+    function appendMore() {
+      var list = ["li$li",{ href:"#", onclick: onclick(enqueue) },
+        ["p", "Load More..."]
+      ];
+      $.ul.removeChild($.li);
+      $.ul.appendChild(domBuilder(list, $));
     }
 
     function load(commit) {

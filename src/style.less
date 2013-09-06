@@ -113,6 +113,10 @@ body, .content, .page {
     &:active {
       background: linear-gradient(to top, @active 0%, darken(@active, 10%) 100%);
     }
+    &[disabled] {
+      background: #888;
+      opacity: 0.5;
+    }
 
   }
 }

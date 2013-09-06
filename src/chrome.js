@@ -109,22 +109,39 @@ require('./main.js')({
       fs.readdir("/", function (err, files) {
         if (err) return callback(err);
         callback(null, files.filter(isGitDir).map(function (path) {
-          return {
-            name: path,
-            description: path,
-            repo: repoify(fsDb(fs(path)), true)
-          };
+          var repo = repoify(fsDb(fs(path), true));
+          repo.name = path;
+          repo.description = path;
+          return repo;
         }));
       });
     });
   },
   getHistoryStream: function (repo, callback) {
-    console.log("TODO: Implement getRepos");
+    // queue of hashes/date pairs sorted by date
+    var queue = [];
+    // hashes we've already put in the queue
+    var seen = {};
+    var done = false;
+    console.log(repo)
+    repo.get("HEAD", function (err, hash) {
+      if (err) return callback(err);
+      console.log("hash");
+      callback(null, {read: read, abort: abort});
+    });
+    function read(callback) {
+      console.log("TODO: Implement read")
+
+    }
+    function abort(callback) {
+      console.log("TODO: Implement abort")
+
+    }
   },
   getCommit: function (repo, hash, callback) {
-    console.log("TODO: Implement getRepos");
+    console.log("TODO: Implement getCommit");
   },
   getTree: function (repo, hash, callback) {
-    console.log("TODO: Implement getRepos");
+    console.log("TODO: Implement getTree");
   }
 });

@@ -69,23 +69,26 @@ function getHistoryStream(repo, callback) {
     }
   }
 
-  callback(null, { next: getNext, abort: abort });
+  callback(null, { read: read, abort: abort });
 
-  function getNext() {
-    if (done) return;
+  function read(callback) {
+    if (done) return callback();
     var next = queue.pop();
-    if (!next) return abort();
+    if (!next) return abort(callback);
     next = next[0];
     if (next.parents) {
       next.parents.forEach(enqueue);
     }
-    return next;
+    setTimeout(function () {
+      callback(null, next);
+    }, 10);
   }
 
-  function abort() {
+  function abort(callback) {
     done = true;
     queue = null;
     seen = null;
+    callback();
   }
 
   function enqueue(hash) {
@@ -95,7 +98,7 @@ function getHistoryStream(repo, callback) {
     if (object.type !== "commit") return;
     var commit = object.body;
     commit.hash = hash;
-    var match = commit.author.match(/([0-9]+) ([-+]?[0-9]+)$/);
+    var match = commit.author.match(/([0-9]+) ([\-+]?[0-9]+)$/);
     var timestamp = match[1];
     if (!timestamp) throw new Error("Invalid timestamp in " + commit.author);
     timestamp = parseInt(timestamp, 10);
