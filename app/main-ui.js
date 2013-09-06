@@ -22,7 +22,7 @@ function onclick(handler) {
 function repoList() {
   return domBuilder(["section.page", {"data-position": "current"},
     ["header",
-      ["button", {onclick:onclick(add)}, "➕"],
+      ["button", {onclick:onclick(add)}, "⊕"],
       ["h1", "Git Repositories"]
     ],
     ["ul.content.header", data.repos.map(function (repo) {
