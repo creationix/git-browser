@@ -4,6 +4,7 @@ html {
   font-size: 10px;
   font-family: MozTT, sans-serif;
 }
+
 body, .content, .page {
   margin: 0;
   font-size: 1rem;
@@ -14,6 +15,7 @@ body, .content, .page {
   top: 0;
   bottom: 0;
 }
+
 .page (@top, @bottom) {
   top: 0;
   height: 100%;
@@ -57,61 +59,56 @@ body, .content, .page {
     }
   }
 }
+
 .content {
   overflow: auto;
+  &.header {
+    margin-top: 5rem;
+  }
 }
-.content.header {
-  margin-top: 5rem;
-}
+
 ul.content {
   list-style-type: none;
   margin: 0;
   padding: 0;
+  li {
+    height: 6rem;
+    padding: 0 2rem;
+    .icon {
+      line-height: 6rem;
+      font-size: 2rem;
+    }
+    .icon.right {
+      float: right;
+    }
+    p {
+      color: #5b5b5b;
+      font-size: 1.5rem;
+      line-height: 2rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      display: block;
+      margin: 0;
+    }
+    p:first-of-type {
+      font-size: 1.8rem;
+      line-height: 2.2rem;
+      color: #000;
+      padding: 1rem 0 0;
+    }
+    &> :first-child {
+      margin-top: 0;
+    }
+    &> :last-child {
+      margin-bottom: 0;
+    }
+    &:hover {
+      background-color: rgba(128, 200, 255, 0.3);
+    }
+    &:active {
+      background-color: rgba(128, 200, 255, 0.7);
+    }
+  }
 }
-ul.content li {
-  height: 6rem;
-  padding: 0 2rem;
-}
-ul.content li .icon {
-  line-height: 6rem;
-  font-size: 2rem;
-}
-ul.content li .icon.right {
-  float: right;
-}
-ul.content li p {
-  color: #5b5b5b;
-  font-size: 1.5rem;
-  line-height: 2rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  display: block;
-  margin: 0;
-}
-ul.content li p:first-of-type {
-  font-size: 1.8rem;
-  line-height: 2.2rem;
-  color: #000;
-  padding: 1rem 0 0;
-}
-ul.content li > :first-child {
-  margin-top: 0;
-}
-ul.content li > :last-child {
-  margin-bottom: 0;
-}
-ul.content li:hover {
-  background-color: rgba(128, 200, 255, 0.3);
-}
-ul.content li:active {
-  background-color: rgba(128, 200, 255, 0.7);
-}
-::-webkit-scrollbar {
-  background: none;
-  width: 1rem;
-}
-::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.3);
-  border-radius: 1rem;
-}
+
