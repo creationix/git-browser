@@ -81,7 +81,7 @@ function getHistoryStream(repo, callback) {
     }
     setTimeout(function () {
       callback(null, next);
-    }, 10);
+    }, 20);
   }
 
   function abort(callback) {

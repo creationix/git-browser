@@ -122,20 +122,70 @@ require('./main.js')({
     var queue = [];
     // hashes we've already put in the queue
     var seen = {};
+    var working = 0;
+    var cb;
+    var error;
     var done = false;
-    console.log(repo)
     repo.get("HEAD", function (err, hash) {
       if (err) return callback(err);
-      console.log("hash");
+      enqueue(hash);
       callback(null, {read: read, abort: abort});
     });
+    function enqueue(hash) {
+      if (hash in seen) return;
+      seen[hash] = true;
+      working++;
+      repo.loadCommit(hash, function (err, commit) {
+        if (err) {
+          error = err;
+          return check();
+        }
+        commit.hash = hash;
+        var match = commit.author.match(/([0-9]+) ([\-+]?[0-9]+)$/);
+        var timestamp = match[1];
+        if (!timestamp) {
+          err = new Error("Invalid timestamp in " + commit.author);
+          return check();
+        }
+        timestamp = parseInt(timestamp, 10);
+        var index = queue.length;
+        while (index > 0 && queue[index - 1][1] > timestamp) index--;
+        queue.splice(index, 0, [commit, timestamp]);
+        check();
+      });
+    }
+    function check() {
+      if (!--working && cb) {
+        var callback = cb;
+        cb = null;
+        read(callback);
+      }
+    }
     function read(callback) {
-      console.log("TODO: Implement read")
-
+      if (cb) throw new Error("Only onle read at a time");
+      if (error) {
+        var err = error;
+        error = null;
+        return callback(err);
+      }
+      if (done) return callback();
+      if (working) {
+        cb = callback;
+        return;
+      }
+      var next = queue.pop();
+      if (!next) return abort(callback);
+      next = next[0];
+      if (next.parents) {
+        next.parents.forEach(enqueue);
+      }
+      callback(null, next);
     }
     function abort(callback) {
-      console.log("TODO: Implement abort")
-
+      done = true;
+      queue = null;
+      seen = null;
+      callback();
     }
   },
   getCommit: function (repo, hash, callback) {

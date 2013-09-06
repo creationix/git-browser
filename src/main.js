@@ -109,7 +109,6 @@ module.exports = function (backend) {
   }
 
   function historyList(repo, stream) {
-    var list = [];
     var $ = {};
     var chunkSize = 9;
     var root = domBuilder(["section.page",
@@ -151,6 +150,7 @@ module.exports = function (backend) {
       ];
       $.ul.removeChild($.li);
       $.ul.appendChild(domBuilder(list, $));
+      $.ul.scrollTop = $.ul.scrollHeight;
     }
 
     function appendMore() {
