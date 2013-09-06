@@ -1,6 +1,6 @@
 #!/bin/sh
-make $@
+./make.js $@
 while true
-  do inotifywait --exclude 'bb.*|tags|\.zedstate|node_modules.*|build.*|\.git.*' -e create -e delete -e modify -q -r .
-  make $@
+  do inotifywait -e create -e delete -e modify -q -r src res
+  ./make.js $@
 done

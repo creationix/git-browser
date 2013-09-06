@@ -82,6 +82,26 @@ function localResolve(path) {
   return false;
 }
 
+exports.build = function (source, callback) {
+  // TODO: make this not using blocking I/O?
+  var codes;
+  try {
+    add(source);
+    var modules = flush();
+    codes = Object.keys(modules).map(function (name) {
+      return wrap(name, modules[name]);
+    });
+    codes.unshift("var modules = {};\nvar definitions = {};");
+    codes.push($require.toString().replace('$require', 'require'));
+    codes.push("require(" + JSON.stringify(source) + ");");
+  }
+  catch (err) {
+    return callback(err);
+  }
+  var code = "(function (realRequire) {" + indent(codes.join("\n\n")) + "}(typeof require === 'function' ? require : undefined));";
+  callback(null, code);
+};
+
 // Launched as CLI tool.
 if (process.argv[1] === __filename) {
   for (var i = 2; i < process.argv.length; i++) {
