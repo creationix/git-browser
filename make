@@ -1,35 +1,30 @@
 #!/usr/bin/env node
 
-var task = require('./utils/task.js');
-var copy = task.copy;
-var rmrf = task.rmrf;
-var parallel = task.parallel;
-var lessc = task.lessc;
-var build = task.build;
+var T = require('./utils/task.js');
 
-task("all", ["web-app", "firefox-app", "chrome-app"]);
+T("all", ["web-app", "firefox-app", "chrome-app"]);
 
-task("web-app", parallel(
-  copy("res", "build/web-app"),
-  lessc("src/style.less", "build/web-app/style.css"),
-  build("src/web.js", "build/web-app/app.js")
+T("web-app", T.parallel(
+  T.copy("res", "build/web-app"),
+  T.lessc("src/style.less", "build/web-app/style.css"),
+  T.build("src/web.js", "build/web-app/app.js")
 ));
 
-task("firefox-app", parallel(
-  copy("res", "build/firefox-app"),
-  lessc("src/style.less", "build/firefox-app/style.css"),
-  build("src/firefox.js", "build/firefox-app/app.js")
+T("firefox-app", T.parallel(
+  T.copy("res", "build/firefox-app"),
+  T.lessc("src/style.less", "build/firefox-app/style.css"),
+  T.build("src/firefox.js", "build/firefox-app/app.js")
 ));
 
-task("chrome-app", parallel(
-  copy("res", "build/chrome-app"),
-  lessc("src/style.less", "build/chrome-app/style.css"),
-  build("src/chrome.js", "build/chrome-app/app.js")
+T("chrome-app", T.parallel(
+  T.copy("res", "build/chrome-app"),
+  T.lessc("src/style.less", "build/chrome-app/style.css"),
+  T.build("src/chrome.js", "build/chrome-app/app.js")
 ));
 
-task("clean", rmrf("build"));
+T("clean", T.rmrf("build"));
 
-task.execute(task.run, process.argv.slice(2))(function (err) {
+T.execute(T.run, process.argv.slice(2), function (err) {
   if (err) {
     console.error(err.stack || err);
     process.exit(-1);
