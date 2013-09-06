@@ -55,7 +55,7 @@ function isGitDir(path) {
 }
 
 var progMatch = /^([^:]*):[^\(]*\(([0-9]+)\/([0-9]+)\)/;
-var progMatchBasic = /^([^:]*):/;
+var progMatchBasic = /^([^:]*)/;
 function parseProgress(string) {
   var match = string.match(progMatch) ||
               string.match(progMatchBasic);
@@ -88,7 +88,7 @@ require('./main.js')({
         init: repo.init(),
         pack: connection.fetch(config),
       }, function (err, result) {
-        if (err) throw err;
+        if (err) return callback(err);
         serial(
           parallel(
             repo.importRefs(result.pack.refs),
@@ -96,8 +96,9 @@ require('./main.js')({
           ),
           connection.close()
         )(function (err) {
-          if (err) throw err;
-          console.log("DONE");
+          if (err) return callback(err);
+          onProgress("Done");
+          callback(null, repo);
         });
       });
     });

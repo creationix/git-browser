@@ -134,10 +134,14 @@ module.exports = function (root) {
       dirReader.readEntries(onRead, errorHandler);
       function onRead(results) {
         if (results.length) {
-          entries = entries.concat(toArray(results));
+          for (var i = 0, l = results.length; i < l; ++i) {
+            entries.push(results[i].name);
+          }
           dirReader.readEntries(onRead, errorHandler);
         }
-        callback(null, entries);
+        else {
+          callback(null, entries);
+        }
       }
     }, errorHandler);
   }
