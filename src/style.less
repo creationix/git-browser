@@ -67,6 +67,53 @@ body, .content, .page {
   }
 }
 
+.form(@normal, @hover, @active) {
+  // width: 100%;
+  display: block;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  label {
+    display: block;
+    font-size: 1.8rem;
+    line-height: 2.2rem;
+    color: #000;
+    padding: 1rem 0 0;
+  }
+  progress {
+    display: block;
+    margin: 0 0;
+    height: 4rem;
+    padding: 0 1rem;
+    width: 100%;
+  }
+  input {
+    -webkit-appearance: none; -moz-appearance: none;
+    display: block;
+    margin: 0 0;
+    height: 4rem;
+    padding: 0 1rem;
+    width: 100%;
+    line-height: 4rem;
+    font-size: 1.7rem;
+    border: 1px solid #bbb;
+    border-radius: 0.5rem;
+  }
+  input[type=submit] {
+    border-radius: 1rem;
+    margin: 1rem 0;
+    color: #fff;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(to bottom, @normal 0%, darken(@normal, 10%) 100%);
+    &:hover {
+      background: linear-gradient(to bottom, @hover 0%, darken(@hover, 10%) 100%);
+    }
+    &:active {
+      background: linear-gradient(to top, @active 0%, darken(@active, 10%) 100%);
+    }
+
+  }
+}
+
 .content {
   overflow: auto;
   &.header {

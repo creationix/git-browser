@@ -47,7 +47,9 @@ function isGitDir(path) {
 }
 
 require('./main.js')({
-  addRepo: function (host, path, onProgress, callback) {
+  // opts are host, path, and description
+  addRepo: function (opts, onProgress, callback) {
+    console.log(opts);
     console.log("TODO: Implement addRepo");
   },
   getRepos: function (callback) {

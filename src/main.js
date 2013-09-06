@@ -16,7 +16,7 @@ module.exports = function (backend) {
   }
 
   function repoList(repos) {
-    return domBuilder(["section.page", {"data-position": "current"},
+    return domBuilder(["section.page", {"data-position": "none"},
       ["header",
         (backend.addRepo ? ["button", {onclick:onclick(add)}, "⊕"] : []),
         ["h1", "Git Repositories"]
@@ -43,15 +43,58 @@ module.exports = function (backend) {
   }
 
   function addPage() {
+    var $ = {};
     return domBuilder(["section.page",
       ["header",
         ["button.back", {onclick: ui.pop}, "❰"],
         ["h1", "Clone Repository"]
       ],
-      ["content.header",
-        ["h2", "TODO: Implement me"]
+      ["form.content.header", {onsubmit: submit},
+        ["label", {for: "host"}, "Host"],
+        ["input", {
+          type: "text",
+          name: "host",
+          placeholder: "github.com",
+          value: "github.com",
+          required: true
+        }],
+        ["label", {for: "path"}, "Path"],
+        ["input", {
+          type: "text",
+          name: "path",
+          placeholder: "creationix/conquest",
+          value: "creationix/conquest",
+          required: true
+        }],
+        ["label", {for: "path"}, "Description"],
+        ["input", {
+          type: "text",
+          name: "description",
+          placeholder: "Enter a short description here",
+          value: "A remake of the classic Lords of Conquest for C64 implemented in JavaScript"
+        }],
+        ["input", {
+          type: "submit",
+          value: "Clone"
+        }],
+        ["progress$progress", {css: {display: "none"}}]
       ]
-    ]);
+    ], $);
+    function submit(evt) {
+      evt.preventDefault();
+      $.progress.style.display = null;
+      backend.addRepo({
+        host: this.host.value,
+        path: this.path.value,
+        description: this.description.value
+      }, function (type, value, max) {
+        $.progress.setAttribute("max", max);
+        $.progress.setAttribute("value", value);
+      }, function (err, repo) {
+        if (err) throw err;
+        console.log(repo);
+      });
+    }
   }
 
   function historyList(repo, stream) {
