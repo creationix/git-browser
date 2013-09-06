@@ -6,7 +6,7 @@ var WEBDIR = process.env.WEBDIR || "build/web";
 var MOZDIR = process.env.MOZDIR || "build/moz";
 var CHROMEDIR = process.env.CHROMEDIR || "build/chrome";
 
-T("all", ["web-app", "firefox-app", "chrome-app"]);
+T("all", ["web", "moz", "chrome"]);
 
 function base(bootstrap, targetDir) {
   return T.parallel(
@@ -16,14 +16,14 @@ function base(bootstrap, targetDir) {
   );
 }
 
-T("web-app", base("web.js", WEBDIR));
+T("web", base("web.js", WEBDIR));
 
-T("firefox-app", T.parallel(
+T("moz", T.parallel(
   base("firefox.js", MOZDIR),
   T.copy("src/manifest.webapp", MOZDIR + "/manifest.webapp")
 ));
 
-T("chrome-app", T.parallel(
+T("chrome", T.parallel(
   base("chrome.js", CHROMEDIR),
   T.copy("src/manifest.json", CHROMEDIR + "/manifest.json"),
   T.copy("src/background.js", CHROMEDIR + "/background.js")
