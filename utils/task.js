@@ -170,7 +170,7 @@ function run(name, callback) {
   if (!(name in tasks)) {
     return callback("Unknown task " + name);
   }
-  console.log("Starting " + name);
+  // console.log("Starting " + name);
   var waiters = started[name] = [callback];
   var task;
   if (name in dependencies) {
@@ -185,7 +185,7 @@ function run(name, callback) {
   task(function (err) {
     if (err) return callback(err);
     done[name] = true;
-    console.log("Finished " + name);
+    // console.log("Finished " + name);
     delete started[name];
     waiters.forEach(call);
   });
