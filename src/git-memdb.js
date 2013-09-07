@@ -15,7 +15,7 @@ module.exports = function () {
     save: save,
     load: load,
     remove: remove,
-    init: init
+    init: init,
   };
 
   function write(path, data, callback) {
@@ -38,7 +38,8 @@ module.exports = function () {
     ]);
     var hash = sha1(buffer);
     db[hash] = object;
-    callback(null, hash);
+    setTimeout(callback, 10, null, hash);
+    // callback(null, hash);
   }
 
   function load(hash, callback) {

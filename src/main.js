@@ -87,23 +87,31 @@ module.exports = function (backend) {
       if (working) return;
       working = true;
       $.submit.setAttribute("disabled", true);
+      var label = "", value, max;
+      var interval = setInterval(function () {
+        $.label.textContent = label;
+        $.progress.setAttribute("max", max);
+        $.progress.setAttribute("value", value);
+      }, 33);
       $.progress.style.display = null;
       backend.addRepo({
         hostname: this.hostname.value,
         pathname: this.pathname.value,
         description: this.description.value
-      }, function (label, value, max) {
-        $.label.textContent = label;
-        $.progress.setAttribute("max", max);
-        $.progress.setAttribute("value", value);
+      }, function (l, v, m) {
+        if (m) l += ' (' + v + '/' + m + ')';
+        label = l;
+        value = v;
+        max = m;
       }, function (err, repo) {
-        if (err) throw err;
+        clearInterval(interval);
         ui.pop();
         ui.pop();
         backend.getRepos(function (err, repos) {
           if (err) throw err;
           ui.push(repoList(repos));
         });
+        if (err) throw err;
       });
     }
   }

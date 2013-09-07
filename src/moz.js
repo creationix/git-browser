@@ -20,14 +20,23 @@ var parallelData = require('js-git/helpers/parallel-data.js');
 
 var progMatch = /^([^:]*):[^\(]*\(([0-9]+)\/([0-9]+)\)/;
 var progMatchBasic = /^([^:]*)/;
-function parseProgress(string) {
-  var match = string.match(progMatch) ||
-              string.match(progMatchBasic);
-  if (!match) return {};
-  return {
-    label: match[1],
-    value: parseInt(match[2], 10),
-    max: parseInt(match[3], 10)
+function progressParser(emit) {
+  var buffer = "";
+  return function (chunk) {
+    var start = 0;
+    for (var i = 0, l = chunk.length; i < l; ++i) {
+      var c = chunk[i];
+      if (c === "\r" || c === "\n") {
+        buffer += chunk.substr(start, i);
+        start = i + 1;
+        var match = buffer.match(progMatch) ||
+                    buffer.match(progMatchBasic);
+        buffer = "";
+        if (!match) continue;
+        emit(match[1], parseInt(match[2], 10), parseInt(match[3], 10));
+      }
+    }
+    buffer += chunk.substr(start);
   };
 }
 
@@ -48,10 +57,7 @@ require('./main.js')({
     repos.push(repo);
     var config = {
       includeTag: true,
-      onProgress: function (progress) {
-        progress = parseProgress(progress);
-        onProgress(progress.label, progress.value, progress.max);
-      }
+      onProgress: progressParser(onProgress)
     };
     var connection = tcpProto(opts);
     parallelData({
