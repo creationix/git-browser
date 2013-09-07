@@ -114,7 +114,14 @@ function getHash(repo, hash, callback) {
   callback(null, repo.db.objects[hash].body);
 }
 
+
+
 require('./main.js')({
+  addRepo: function (opts, onProgress, callback) {
+    setTimeout(function () {
+      callback();
+    }, 500);
+  },
   getRepos: getRepos,
   getHistoryStream: getHistoryStream,
   getCommit: getHash,
