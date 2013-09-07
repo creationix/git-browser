@@ -28,6 +28,7 @@ function pop() {
   var current = pages.pop();
   var previous = pages.length && pages[pages.length - 1];
   current.classList.remove("current");
+  current.classList.remove("current");
   current.classList.add("right");
   if (previous) {
     previous.classList.remove("left");
@@ -35,16 +36,17 @@ function pop() {
   }
 }
 
-function onAnimationEnd() {
-  var classList = this.classList;
+function onAnimationEnd(evt) {
+  var page = evt.target;
+  var classList = page.classList;
   if (classList.contains("current")) {
-    this.setAttribute("data-position", "current");
+    page.setAttribute("data-position", "current");
   }
   else if (classList.contains("left")) {
-    this.setAttribute("data-position", "left");
+    page.setAttribute("data-position", "left");
   }
   else {
-    document.body.removeChild(this);
+    document.body.removeChild(page);
   }
 }
 
