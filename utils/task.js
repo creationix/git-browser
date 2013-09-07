@@ -1,4 +1,5 @@
 var fs = require('fs');
+var childProcess = require('child_process');
 var less = require('less');
 
 var pathJoin = require('path').join;
@@ -21,6 +22,7 @@ task.copy = copy;
 task.lessc = lessc;
 task.build = build;
 task.newer = newer;
+task.execFile = execFile;
 
 function task(name, deps, fn) {
   if (typeof deps === "function" && typeof fn === "undefined") {
@@ -103,7 +105,7 @@ function execute2(fn, args, args2, callback) {
 
 function parallel() {
   var actions = slice.call(arguments);
-  return function (callback) {
+  return function parallelActions(callback) {
     var length = actions.length;
     if (!length) return callback();
     var left = length;
@@ -127,7 +129,7 @@ function parallel() {
 
 function serial() {
   var actions = arguments;
-  return function (callback) {
+  return function serialActions(callback) {
     var i = 0;
     var length = actions.length;
     next();
@@ -164,9 +166,12 @@ function parallelData(actions, next) {
 }
 
 function run(name, callback) {
+  if (!callback) return function runAction(callback) {
+    return run(name, callback);
+  };
   if (name in done) return callback();
   if (name in started) {
-    return started.push(callback);
+    return started[name].push(callback);
   }
   if (!(name in tasks)) {
     return callback("Unknown task " + name);
@@ -195,7 +200,9 @@ function run(name, callback) {
 function call(fn) { fn(); }
 
 function mkdirp(path, callback) {
-  if (!callback) return mkdirp.bind(this, path);
+  if (!callback) return function mkdirpAction(callback) {
+    return mkdirp(path, callback);
+  };
   make();
   function make(err) {
     if (err) return callback(err);
@@ -213,7 +220,9 @@ function mkdirp(path, callback) {
 }
 
 function rmrf(path, callback) {
-  if (!callback) return rmrf.bind(this, path);
+  if (!callback) return function rmrfAction(callback) {
+    return rmrf(path, callback);
+  };
   fs.unlink(path, onunlink);
   function onunlink(err) {
     if (err) {
@@ -246,7 +255,9 @@ function rmrf(path, callback) {
 }
 
 function copy(source, dest, callback) {
-  if (!callback) return copy.bind(this, source, dest);
+  if (!callback) return function copyAction(callback) {
+    return copy(source, dest, callback);
+  };
   fs.readdir(source, onreaddir);
   function onreaddir(err, names) {
     if (err) {
@@ -257,8 +268,9 @@ function copy(source, dest, callback) {
   }
 }
 
-function stat(path) {
-  return function (callback) {
+function stat(path, callback) {
+  if (callback) return stat(path)(callback);
+  return function statAction(callback) {
     fs.stat(path, function (err, stat) {
       if (err && err.code === "ENOENT") return callback();
       callback(err, stat);
@@ -288,7 +300,7 @@ function copyFile(source, dest, callback) {
 }
 
 function copyDir(source, dest, names, callback) {
-  mkdirp(dest, function (err) {
+  mkdirp(dest, function copyDirAction(err) {
     if (err) return callback(err);
     execute2(copy, names.map(sourceJoin), names.map(destJoin), callback);
   });
@@ -301,7 +313,7 @@ function copyDir(source, dest, names, callback) {
 }
 
 function newer(sourceDir, pattern, dest, cont) {
-  return function (callback) {
+  return function newerAction(callback) {
     fs.stat(dest, function (err, stat) {
       var mtime;
       if (err) {
@@ -366,7 +378,9 @@ function lessc(source, dest, callback) {
 }
 
 function build(source, dest, callback) {
-  if (!callback) return build.bind(this, source, dest);
+  if (!callback) return function buildAction(callback) {
+    return build(source, dest, callback);
+  };
   require('./find-deps.js').build(source, function (err, code) {
     if (err) return callback(err);
     mkdirp(dirname(dest), function (err) {
@@ -374,7 +388,40 @@ function build(source, dest, callback) {
       fs.writeFile(dest, code, function (err) {
         if (err) return callback(err);
         console.log("./find-deps.js %s > %s", source, dest);
+        callback();
       });
     });
   });
+}
+
+function execFile(file, args, options, callback) {
+  if (!callback) return function execFileAction(callback) {
+    return execFile(file, args, options, callback);
+  };
+  options.stdio = options.stdio || "inherit";
+  console.log("%s %s", file, args.map(bashEscape).join(" "));
+  childProcess.execFile(file, args, options, callback);
+}
+
+// Implement bash string escaping.
+var safePattern =    /^[a-z0-9_\/\-.,?:@#%\^+=\[\]]*$/i;
+var safeishPattern = /^[a-z0-9_\/\-.,?:@#%\^+=\[\]{}|&()<>; *']*$/i;
+function bashEscape(arg) {
+  // These don't need quoting
+  if (safePattern.test(arg)) return arg;
+
+  // These are fine wrapped in double quotes using weak escaping.
+  if (safeishPattern.test(arg)) return '"' + arg + '"';
+
+  // Otherwise use strong escaping with single quotes
+  return "'" + arg.replace(/'+/g, function (val) {
+    // But we need to interpolate single quotes efficiently
+
+    // One or two can simply be '\'' -> ' or '\'\'' -> ''
+    if (val.length < 3) return "'" + val.replace(/'/g, "\\'") + "'";
+
+    // But more in a row, it's better to wrap in double quotes '"'''''"' -> '''''
+    return "'\"" + val + "\"'";
+
+  }) + "'";
 }
