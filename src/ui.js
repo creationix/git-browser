@@ -34,6 +34,9 @@ function pop() {
     previous.classList.remove("left");
     previous.classList.add("current");
   }
+  setTimeout(function () {
+    document.body.removeChild(current);
+  }, 400);
 }
 
 function onAnimationEnd(evt) {
@@ -44,9 +47,6 @@ function onAnimationEnd(evt) {
   }
   else if (classList.contains("left")) {
     page.setAttribute("data-position", "left");
-  }
-  else {
-    document.body.removeChild(page);
   }
 }
 
