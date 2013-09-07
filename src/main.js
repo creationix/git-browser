@@ -233,7 +233,6 @@ module.exports = function (backend) {
         ["h1", repo.name]
       ],
       ["ul.content.header", tree.map(function (file) {
-        console.log(file);
         return ["li", { href:"#", onclick: onclick(load, file) },
           (file.mode === 16384 ? [".icon.right", "❱"] : []),
           ["p", file.name],
