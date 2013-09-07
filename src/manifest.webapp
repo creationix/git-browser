@@ -4,7 +4,7 @@
     "name": "Tim Caswell",
     "url": "http://creationix.com/"
   },
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "privileged",
   "description": "Browse Git Repos offline.",
   "launch_path": "/index.html",
