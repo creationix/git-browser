@@ -3,8 +3,8 @@ require('js-git/lib/platform.js')({
   tcp: require('./moz-tcp.js'),
   sha1: require('./sha1.js'),
   bops: require('./bops/index.js'),
-  trace: require('./trace.js'),
-  // trace: false,
+  // trace: require('./trace.js'),
+  trace: false,
   agent: "jsgit/" + require('js-git/package.json').version,
 });
 
@@ -40,11 +40,12 @@ require('./main.js')({
     var description = opts.description || "git://" + path;
     path = path.replace(/\//g, "_");
     var repo = repoify(gitMemdb(), true);
-    repos.push({
-      title: opts.pathname,
-      description: description,
-      repo: repo,
-    });
+    var name = opts.pathname;
+    if (name[0] === "/") name = name.substr(1);
+    if (name.substr(name.length - 4) === ".git") name = name.substr(0, name.length - 4);
+    repo.name = name;
+    repo.description = description;
+    repos.push(repo);
     var config = {
       includeTag: true,
       onProgress: function (progress) {
@@ -83,7 +84,7 @@ require('./main.js')({
     var cb;
     var error;
     var done = false;
-    repo.get("HEAD", function (err, hash) {
+    repo.get("refs/heads/master", function (err, hash) {
       if (err) return callback(err);
       enqueue(hash);
       callback(null, {read: read, abort: abort});

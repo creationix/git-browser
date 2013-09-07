@@ -110,7 +110,14 @@ function wrapSocket(socket) {
       socket.close();
       return finish(err);
     }
-    if (socket.send(chunk.buffer)) {
+    var needsMore;
+    try {
+      needsMore = socket.send(chunk.buffer);
+    }
+    catch (err) {
+      console.error(err);
+    }
+    if (needsMore) {
       reading = true;
       source.read(onRead);
     }
