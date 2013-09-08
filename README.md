@@ -1,6 +1,8 @@
 git-browser
 ===========
 
+![js-git browser](http://creationix.com/git-browser-tile-1400x560-half.png)
+
 Browse Git Repos offline.
 
 ## Firefox OS Build Instructions
