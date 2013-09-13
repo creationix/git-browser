@@ -34,7 +34,12 @@ function push(next) {
   removeClass(next, "right");
   addClass(next, "current");
   document.body.appendChild(next);
-  setTimeout(onAnimationEnd, 400);
+  setTimeout(function () {
+    if (current) {
+      onAnimationEnd(current);
+    }
+    onAnimationEnd(next);
+  }, 400);
 }
 
 function pop() {
@@ -48,15 +53,16 @@ function pop() {
     addClass(previous, "current");
   }
   setTimeout(function () {
-    onAnimationEnd();
+    if (previous) {
+      onAnimationEnd(previous);
+    }
     document.body.removeChild(current);
   }, 400);
 }
 
-function onAnimationEnd(evt) {
-  var page = evt.target;
+function onAnimationEnd(page) {
   var classes = page.getAttribute("class").split(" ");
-  
+
   if (classes.indexOf("current") >= 0) {
     page.setAttribute("data-position", "current");
   }
