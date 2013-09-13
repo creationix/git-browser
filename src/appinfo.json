@@ -1,0 +1,9 @@
+{
+  "id": "com.creationix.git-browser",
+  "version": "0.0.1",
+  "vendor": "Tim Caswell",
+  "type": "web",
+  "main": "index.html",
+  "title": "Git-Browser",
+  "icon": "icon-128.png"
+}
