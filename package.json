@@ -3,16 +3,16 @@
   "private": true,
   "version": "0.0.0",
   "description": "A git browser app for chrome and firefox",
-  "private": true,
   "dependencies": {
     "base64-js": "~0.0.2",
-    "js-git": "~0.3.2",
+    "js-git": "~0.5.0",
     "push-to-pull": "~0.1.0",
     "to-utf8": "~0.0.1",
     "varint": "~0.0.3",
     "domlog": "0.0.9",
     "dombuilder": "~0.1.2",
-    "markdown": "~0.5.0"
+    "git-fs-db": "~0.1.1",
+    "git-net": "0.0.3"
   },
   "devDependencies": {
     "less": "~1.4.2"
