@@ -51,7 +51,7 @@ module.exports = function (backend) {
         ["h1", "Clone Repository"]
       ],
       ["form.content.header", {onsubmit: submit},
-        ["label", {for: "hostname"}, "Host"],
+        ["label", {"for": "hostname"}, "Host"],
         ["input", {
           type: "text",
           name: "hostname",
@@ -59,7 +59,7 @@ module.exports = function (backend) {
           value: "github.com",
           required: true
         }],
-        ["label", {for: "pathname"}, "Path"],
+        ["label", {"for": "pathname"}, "Path"],
         ["input", {
           type: "text",
           name: "pathname",
@@ -67,7 +67,7 @@ module.exports = function (backend) {
           value: "/creationix/conquest.git",
           required: true
         }],
-        ["label", {for: "description"}, "Description"],
+        ["label", {"for": "description"}, "Description"],
         ["input", {
           type: "text",
           name: "description",
