@@ -8,21 +8,19 @@ var platform = {
   inflate: require('./inflate.js'),
   deflate: require('./deflate.js'),
   // trace: require('./trace.js'),
-  trace: false,
-  agent: "jsgit/" + require('js-git/package.json').version,
 };
 
 var jsGit = require('js-git')(platform);
 var gitRemote = require('git-net')(platform);
 var fsDb = require('git-fs-db')(platform);
 var gitWebfs = require('./git-webfs.js');
-
+var progressParser = require('./progress-parser.js');
 
 var fs;
 function getFs(callback) {
   if (fs) return callback(null, fs);
   var done = false;
-  window.requestFileSystem(window.PERSISTENT, null, onInitFs, errorHandler);
+  window.requestFileSystem(window.TEMPORARY, null, onInitFs, errorHandler);
   function onInitFs(webfs) {
     if (done) return;
     done = true;
@@ -49,27 +47,6 @@ function isGitDir(path) {
   return (/\.git$/).test(path);
 }
 
-var progMatch = /^([^:]*):[^\(]*\(([0-9]+)\/([0-9]+)\)/;
-var progMatchBasic = /^([^:]*)/;
-function progressParser(emit) {
-  var buffer = "";
-  return function (chunk) {
-    var start = 0;
-    for (var i = 0, l = chunk.length; i < l; ++i) {
-      var c = chunk[i];
-      if (c === "\r" || c === "\n") {
-        buffer += chunk.substr(start, i);
-        start = i + 1;
-        var match = buffer.match(progMatch) ||
-                    buffer.match(progMatchBasic);
-        buffer = "";
-        if (!match) continue;
-        emit(match[1], parseInt(match[2], 10), parseInt(match[3], 10));
-      }
-    }
-    buffer += chunk.substr(start);
-  };
-}
 
 require('./main.js')({
   // opts are host, path, and description
