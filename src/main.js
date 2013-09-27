@@ -1,9 +1,13 @@
 var domBuilder = require('dombuilder');
+var progressParser = require('./progress-parser.js');
 var ui = require('./ui.js');
 module.exports = function (backend) {
 
-  backend.getRepos(function (err, repos) {
-    if (err) throw err;
+  backend.listRepos(function (err, repos) {
+    if (err) {
+      alert(err.toString());
+      throw err;
+    }
     ui.push(repoList(repos));
   });
 
@@ -18,7 +22,7 @@ module.exports = function (backend) {
   function repoList(repos) {
     return domBuilder(["section.page", {"data-position": "none"},
       ["header",
-        (backend.addRepo ? ["button", {onclick:onclick(add)}, "⊕"] : []),
+        ["button", {onclick:onclick(add)}, "⊕"],
         ["h1", "Git Repositories"]
       ],
       ["ul.content.header", repos.map(function (repo) {
@@ -31,8 +35,11 @@ module.exports = function (backend) {
     ]);
 
     function load(repo) {
-      backend.getHistoryStream(repo, function (err, stream) {
-        if (err) throw err;
+      repo.logWalk("HEAD", function (err, stream) {
+        if (err) {
+          alert(err.toString());
+          throw err;
+        }
         ui.push(historyList(repo, stream));
       });
     }
@@ -51,28 +58,25 @@ module.exports = function (backend) {
         ["h1", "Clone Repository"]
       ],
       ["form.content.header", {onsubmit: submit},
-        ["label", {"for": "hostname"}, "Host"],
+        ["label", {"for": "url"}, "Remote Url"],
         ["input", {
           type: "text",
-          name: "hostname",
-          placeholder: "github.com",
-          value: "github.com",
+          name: "url",
+          placeholder: "Enter git url here",
+          value: "git://github.com/creationix/conquest.git",
           required: true
         }],
-        ["label", {"for": "pathname"}, "Path"],
+        ["label", {"for": "name"}, "Name"],
         ["input", {
           type: "text",
-          name: "pathname",
-          placeholder: "/creationix/conquest.git",
-          value: "/creationix/conquest.git",
-          required: true
+          name: "name",
+          placeholder: "Enter custom local name here",
         }],
         ["label", {"for": "description"}, "Description"],
         ["input", {
           type: "text",
           name: "description",
           placeholder: "Enter a short description here",
-          value: "A remake of the classic Lords of Conquest for C64 implemented in JavaScript"
         }],
         ["input$submit", {
           type: "submit",
@@ -86,33 +90,72 @@ module.exports = function (backend) {
       evt.preventDefault();
       if (working) return;
       working = true;
-      $.submit.setAttribute("disabled", true);
       var label = "", value, max;
-      var interval = setInterval(function () {
-        $.label.textContent = label;
-        $.progress.setAttribute("max", max);
-        $.progress.setAttribute("value", value);
-      }, 33);
-      $.progress.style.display = null;
-      backend.addRepo({
-        hostname: this.hostname.value,
-        pathname: this.pathname.value,
-        description: this.description.value
-      }, function (l, v, m) {
+      var repo, remote, interval;
+      var url = this.url.value;
+      var name = this.name.value;
+      if (!name) {
+        var index = url.lastIndexOf("/");
+        name = url.substr(index + 1);
+        if (/\.git$/.test(name)) {
+          name = name.substr(0, name.length - 4);
+        }
+      }
+      var description = this.description.value || url;
+      try {
+        remote = backend.remote(url);
+      } catch (err) {
+        working = false;
+        alert(err.toString());
+        throw err;
+      }
+      return backend.createRepo({
+        url: url,
+        name: name,
+        description: description
+      }, onRepo);
+      
+      function onRepo(err, result) {
+        if (err) {
+          working = false;
+          alert(err.toString());
+          throw err;
+        }
+        repo = result;
+        interval = setInterval(function () {
+          $.label.textContent = label;
+          $.progress.setAttribute("max", max);
+          $.progress.setAttribute("value", value);
+        }, 33);
+        $.progress.style.display = null;
+        return repo.fetch(remote, {
+          onProgress: progressParser(onProgress)
+        }, onDone);
+      }
+      
+      function onProgress(l, v, m) {
         if (m) l += ' (' + v + '/' + m + ')';
         label = l;
         value = v;
         max = m;
-      }, function (err, repo) {
+      }
+
+      function onDone(err) {
+        if (err) {
+          alert(err.toString());
+          throw err;
+        }
         clearInterval(interval);
         ui.pop();
         ui.pop();
-        backend.getRepos(function (err, repos) {
-          if (err) throw err;
+        backend.listRepos(function (err, repos) {
+          if (err) {
+            alert(err.toString());
+            throw err;
+          }
           ui.push(repoList(repos));
         });
-        if (err) throw err;
-      });
+      }
     }
   }
 
@@ -137,7 +180,10 @@ module.exports = function (backend) {
       var left = chunkSize;
       stream.read(onRead);
       function onRead(err, commit) {
-        if (err) throw err;
+        if (err) {
+          alert(err.toString());
+          throw err;
+        }
         if (commit === undefined) {
           $.ul.removeChild($.li);
           return;
@@ -218,16 +264,22 @@ module.exports = function (backend) {
     }
 
     function enter() {
-      backend.getTree(repo, commit.tree, function (err, tree) {
-        if (err) throw err;
+      repo.loadAs("tree", commit.tree, function (err, tree) {
+        if (err) {
+          alert(err.toString());
+          throw err;
+        }
         ui.push(filesList(repo, tree));
       });
     }
 
     function ascend(parent) {
       return function () {
-        backend.getCommit(repo, parent, function (err, commit) {
-          if (err) throw err;
+        repo.loadAs("commit", parent, function (err, commit) {
+          if (err) {
+            alert(err.toString());
+            throw err;
+          }
           ui.peer(commitPage(repo, commit));
         });
       };
@@ -250,8 +302,11 @@ module.exports = function (backend) {
     ]);
     function load(file) {
       if (file.mode === 16384) {
-        return backend.getTree(repo, file.hash, function (err, tree) {
-          if (err) throw err;
+        return repo.loadAs("tree", file.hash, function (err, tree) {
+          if (err) {
+            alert(err.toString());
+            throw err;
+          }
           ui.push(filesList(repo, tree));
         });
       }
