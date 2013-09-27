@@ -4,10 +4,7 @@ var ui = require('./ui.js');
 module.exports = function (backend) {
 
   backend.listRepos(function (err, repos) {
-    if (err) {
-      alert(err.toString());
-      throw err;
-    }
+    if (err) return ui.error(err);
     ui.push(repoList(repos));
   });
 
@@ -22,24 +19,27 @@ module.exports = function (backend) {
   function repoList(repos) {
     return domBuilder(["section.page", {"data-position": "none"},
       ["header",
-        ["button", {onclick:onclick(add)}, "⊕"],
+        ["button", {onclick:onclick(add)}, [".icon-plus"]],
         ["h1", "Git Repositories"]
       ],
       ["ul.content.header", repos.map(function (repo) {
-        return ["li", { href:"#", onclick: onclick(load, repo) },
-          [".icon.right", "❱"],
-          ["p", repo.name],
-          ["p", repo.description]
+        return [
+          ["li", { href:"#", onclick: onclick(load, repo) },
+            [".icon.right.icon-right-open"],
+            [".icon.right.icon-download"],
+            ["p", repo.name],
+            ["p", repo.description],
+            ["p.progress",
+              ["progress"],["span", "Working..."]
+            ],
+          ]
         ];
       })]
     ]);
 
     function load(repo) {
       repo.logWalk("HEAD", function (err, stream) {
-        if (err) {
-          alert(err.toString());
-          throw err;
-        }
+        if (err) return ui.error(err);
         ui.push(historyList(repo, stream));
       });
     }
@@ -54,7 +54,7 @@ module.exports = function (backend) {
     var working = false;
     return domBuilder(["section.page",
       ["header",
-        ["button.back", {onclick: ui.pop}, "❰"],
+        ["button.back", {onclick: ui.pop}, [".icon-left-open"]],
         ["h1", "Clone Repository"]
       ],
       ["form.content.header", {onsubmit: submit},
@@ -80,10 +80,8 @@ module.exports = function (backend) {
         }],
         ["input$submit", {
           type: "submit",
-          value: "Clone"
-        }],
-        ["label$label"],
-        ["progress$progress", {css: {display: "none"}}]
+          value: "Add Repo"
+        }]
       ]
     ], $);
     function submit(evt) {
@@ -106,8 +104,7 @@ module.exports = function (backend) {
         remote = backend.remote(url);
       } catch (err) {
         working = false;
-        alert(err.toString());
-        throw err;
+        return ui.error(err);
       }
       return backend.createRepo({
         url: url,
@@ -115,47 +112,43 @@ module.exports = function (backend) {
         description: description
       }, onRepo);
       
-      function onRepo(err, result) {
+      function onRepo(err) {
         if (err) {
           working = false;
-          alert(err.toString());
-          throw err;
+          return ui.error(err);
         }
-        repo = result;
-        interval = setInterval(function () {
-          $.label.textContent = label;
-          $.progress.setAttribute("max", max);
-          $.progress.setAttribute("value", value);
-        }, 33);
-        $.progress.style.display = null;
-        return repo.fetch(remote, {
-          onProgress: progressParser(onProgress)
-        }, onDone);
-      }
-      
-      function onProgress(l, v, m) {
-        if (m) l += ' (' + v + '/' + m + ')';
-        label = l;
-        value = v;
-        max = m;
-      }
-
-      function onDone(err) {
-        if (err) {
-          alert(err.toString());
-          throw err;
-        }
-        clearInterval(interval);
         ui.pop();
         ui.pop();
         backend.listRepos(function (err, repos) {
-          if (err) {
-            alert(err.toString());
-            throw err;
-          }
+          if (err) return ui.error(err);
           ui.push(repoList(repos));
         });
+        // repo = result;
+        // interval = setInterval(function () {
+        //   $.label.textContent = label;
+        //   $.progress.setAttribute("max", max);
+        //   $.progress.setAttribute("value", value);
+        // }, 33);
+        // $.progress.style.display = null;
+        // return repo.fetch(remote, {
+        //   onProgress: progressParser(onProgress)
+        // }, onDone);
       }
+      
+      // function onProgress(l, v, m) {
+      //   if (m) l += ' (' + v + '/' + m + ')';
+      //   label = l;
+      //   value = v;
+      //   max = m;
+      // }
+
+      // function onDone(err) {
+      //   if (err) {
+      //     alert(err.toString());
+      //     throw err;
+      //   }
+      //   clearInterval(interval);
+      // }
     }
   }
 
@@ -165,7 +158,7 @@ module.exports = function (backend) {
     var chunkSize = 9;
     var root = domBuilder(["section.page",
       ["header",
-        ["button.back", {onclick: ui.pop}, "❰"],
+        ["button.back", {onclick: ui.pop}, [".icon-left-open"]],
         ["h1", repo.name]
       ],
       ["ul$ul.content.header",
@@ -180,10 +173,7 @@ module.exports = function (backend) {
       var left = chunkSize;
       stream.read(onRead);
       function onRead(err, commit) {
-        if (err) {
-          alert(err.toString());
-          throw err;
-        }
+        if (err) return ui.error(err);
         if (commit === undefined) {
           $.ul.removeChild($.li);
           return;
@@ -198,7 +188,7 @@ module.exports = function (backend) {
     function append(title, commit) {
       var list = [
         ["li", { href:"#", onclick: onclick(load, commit) },
-          [".icon.right", "❱"],
+          [".icon.right.icon-right-open"],
           ["p", title],
           ["p", commit.hash]
         ],
@@ -226,7 +216,7 @@ module.exports = function (backend) {
     var details = [];
     var body = ["section.page",
       ["header",
-        ["button.back", {onclick: ui.pop}, "❰"],
+        ["button.back", {onclick: ui.pop}, [".icon-left-open"]],
         ["h1", repo.name]
       ],
       ["form.content.header", {onsubmit: prevent}, details]
@@ -265,10 +255,7 @@ module.exports = function (backend) {
 
     function enter() {
       repo.loadAs("tree", commit.tree, function (err, tree) {
-        if (err) {
-          alert(err.toString());
-          throw err;
-        }
+        if (err) return ui.error(err);
         ui.push(filesList(repo, tree));
       });
     }
@@ -276,10 +263,7 @@ module.exports = function (backend) {
     function ascend(parent) {
       return function () {
         repo.loadAs("commit", parent, function (err, commit) {
-          if (err) {
-            alert(err.toString());
-            throw err;
-          }
+          if (err) return ui.error(err);
           ui.peer(commitPage(repo, commit));
         });
       };
@@ -289,12 +273,12 @@ module.exports = function (backend) {
   function filesList(repo, tree) {
     return domBuilder(["section.page",
       ["header",
-        ["button.back", {onclick: ui.pop}, "❰"],
+        ["button.back", {onclick: ui.pop}, [".icon-left-open"]],
         ["h1", repo.name]
       ],
       ["ul.content.header", tree.map(function (file) {
         return ["li", { href:"#", onclick: onclick(load, file) },
-          (file.mode === 16384 ? [".icon.right", "❱"] : []),
+          (file.mode === 16384 ? [".icon.right.icon-right-open"] : []),
           ["p", file.name],
           ["p", file.hash]
         ];
@@ -303,10 +287,7 @@ module.exports = function (backend) {
     function load(file) {
       if (file.mode === 16384) {
         return repo.loadAs("tree", file.hash, function (err, tree) {
-          if (err) {
-            alert(err.toString());
-            throw err;
-          }
+          if (err) return ui.error(err);
           ui.push(filesList(repo, tree));
         });
       }

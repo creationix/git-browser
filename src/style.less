@@ -1,4 +1,5 @@
 @import "transitions.less";
+@import "icons.less";
 
 *, *:before, *:after {
   -moz-box-sizing: border-box;
@@ -79,6 +80,7 @@ body, .content, .page {
     display: block;
   }
   label {
+    clear: left;
     font-size: 1.8rem;
     line-height: 2.2rem;
     color: #000;
@@ -95,7 +97,6 @@ body, .content, .page {
     font-size: 1.5rem;
   }
   input, button {
-    -webkit-appearance: none; -moz-appearance: none;
     display: block;
     margin: 0 0;
     height: 4rem;
@@ -104,6 +105,19 @@ body, .content, .page {
     line-height: 4rem;
     font-size: 1.7rem;
     border: 1px solid #bbb;
+  }
+  input[type=radio] {
+    float: left;
+    width: 4rem;
+    &+ label {
+      float: left;
+      padding-right: 1em;
+      padding-left: 0.5em;
+      clear: inherit;
+    }
+  }
+  input[type=text], button {
+    -webkit-appearance: none; -moz-appearance: none;
     border-radius: 0.5rem;
   }
   input[type=submit], button {
@@ -176,6 +190,18 @@ ul.content {
     }
     &:active {
       background-color: rgba(128, 200, 255, 0.7);
+    }
+    p.progress {
+      display: none;
+      span {
+        margin-left: 0.5em;
+      }
+    }
+    &.active {
+      height: 8rem;
+      p.progress {
+        display: inherit;
+      }
     }
   }
 }

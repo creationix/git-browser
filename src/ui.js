@@ -1,6 +1,7 @@
 exports.push = push;
 exports.pop = pop;
 exports.peer = peer;
+exports.error = error;
 
 document.body.textContent = "";
 var pages = [];
@@ -54,4 +55,9 @@ function peer(next) {
   // TODO: make this prettier
   pop();
   push(next);
+}
+
+function error(err) {
+  // TODO: make a prettier error page
+  alert(err);
 }
