@@ -12,6 +12,7 @@ module.exports = function (backend) {
     var args = Array.prototype.slice.call(arguments, 1);
     return function (evt) {
       evt.preventDefault();
+      evt.stopPropagation();
       return handler.apply(this, args);
     };
   }
@@ -23,20 +24,53 @@ module.exports = function (backend) {
         ["h1", "Git Repositories"]
       ],
       ["ul.content.header", repos.map(function (repo) {
+        var icon = ".icon.left.icon-";
+        if (/github\.com/.test(repo.url)) {
+          icon += "github";
+        }
+        else if (/bitbucket\.org/.test(repo.url)) {
+          icon += "bitbucket";
+        }
+        else {
+          icon += "git";
+        }
         return [
           ["li", { href:"#", onclick: onclick(load, repo) },
+            [icon],
             [".icon.right.icon-right-open"],
-            [".icon.right.icon-download"],
+            ["button.right", {onclick: onclick(fetch, repo)}, [".icon-download"]],
             ["p", repo.name],
             ["p", repo.description],
             ["p.progress",
-              ["progress"],["span", "Working..."]
+              ["progress"], ["span", "Working..."]
             ],
           ]
         ];
       })]
     ]);
+    
+    function fetch(repo) {
+      var button = this;
+      var li = button.parentNode;
+      var progress = li.querySelector(".progress progress");
+      var span = li.querySelector(".progress span");
+      li.classList.add("active");
+      button.setAttribute("disabled", "disabled");
+      var remote = backend.remote(repo.url);
+      repo.fetch(remote, {
+        onProgress: progressParser(function (message, num, max) {
+          progress.setAttribute("max", max);
+          progress.setAttribute("value", num);
+          span.textContent = message;
+        })
+      }, function (err) {
+        button.setAttribute("disabled", "");
+        li.classList.remove("active");
+        if (err) return ui.error(err);
+      });
 
+    }
+    
     function load(repo) {
       repo.logWalk("HEAD", function (err, stream) {
         if (err) return ui.error(err);
@@ -235,13 +269,14 @@ module.exports = function (backend) {
         details.push(["button", {onclick: ascend(parent)}, parent]);
       });
     }
+    console.log(commit);
     details.push(
       ["label", "Author"],
-      ["p", commit.author]);
-    if (commit.author !== commit.committer) {
+      ["p", commit.author.name + " <" + commit.author.email + "> " + commit.author.date]);
+    if (commit.author.email !== commit.committer.email) {
       details.push(
         ["label", "Committer"],
-        ["p", commit.committer]);
+        ["p", commit.committer.name + " <" + commit.committer.email + "> " + commit.committer.date]);
     }
     details.push(
       ["label", "Hash"],
@@ -277,7 +312,16 @@ module.exports = function (backend) {
         ["h1", repo.name]
       ],
       ["ul.content.header", tree.map(function (file) {
+        var icon = ".icon.left.icon-";
+        if (file.mode === 16384) {
+          icon += "folder-empty";
+        }
+        else {
+          icon += "doc";  
+        }
+
         return ["li", { href:"#", onclick: onclick(load, file) },
+          [icon],
           (file.mode === 16384 ? [".icon.right.icon-right-open"] : []),
           ["p", file.name],
           ["p", file.hash]

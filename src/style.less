@@ -23,6 +23,16 @@ body, .content, .page {
 }
 
 .page (@top, @bottom) {
+
+  ul.content li {
+    &:hover {
+      background-color: fadeout(mix(@top, @bottom), 90%);
+    }
+    &:active {
+      background-color: fadeout(mix(@top, @bottom), 70%);
+    }
+  }
+
   top: 0;
   height: 100%;
   bottom: 0;
@@ -59,6 +69,9 @@ body, .content, .page {
         text-align: left;
         float: left;
         margin-right: -2rem;
+      }
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.1);
       }
       &:active {
         background-color: rgba(0, 0, 0, 0.7);
@@ -154,14 +167,42 @@ ul.content {
   padding: 0;
   li {
     height: 6rem;
+    line-height: 6rem;
     padding: 0 2rem;
     border-bottom: 1px solid rgba(0,0,0,0.1);
     .icon {
       line-height: 6rem;
       font-size: 2rem;
+      &.right {
+        float: right;
+        margin-right: -10px;
+        margin-left: 10px;
+      }
+      &.left {
+        float: left;
+        margin-left: -10px;
+        margin-right: 10px;
+      }
     }
-    .icon.right {
-      float: right;
+    button {
+      font-size: 2rem;
+      color: inherit;
+      line-height: inherit;
+      background: none;
+      border: 0;
+      height: 100%;
+      width: 5rem;
+      float:right;
+      margin-left: -20px;
+      margin-right: -15px;
+      padding: 0;
+      &:hover {
+        background-color: rgba(0,0,0,0.1);
+      }
+      &:active {
+        background-color: rgba(0,0,0,0.8);
+        color: #fff;
+      }
     }
     p {
       color: #5b5b5b;
@@ -184,12 +225,6 @@ ul.content {
     }
     &> :last-child {
       margin-bottom: 0;
-    }
-    &:hover {
-      background-color: rgba(128, 200, 255, 0.3);
-    }
-    &:active {
-      background-color: rgba(128, 200, 255, 0.7);
     }
     p.progress {
       display: none;

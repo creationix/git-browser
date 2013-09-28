@@ -4,7 +4,8 @@ var repos = {};
 var platform = {
   bops: require('./bops'),
   sha1: require('./sha1.js'),
-  tcp: require('./web-tcp.js')
+  tcp: require('./web-tcp.js'),
+  http: require('./web-http.js'),
 };
 
 // var newDb = require('./git-localdb.js');
@@ -22,7 +23,10 @@ require('./main.js')({
 
 function getRepo(name) {
   var meta = repoMeta[name];
-  var repo = repos[name] || {};
+  var repo = repos[name];
+  if (!repo) {
+    repo = repos[name] = jsGit(newDb(name));
+  }
   repo.name = name;
   repo.url = meta.url;
   repo.description = meta.description;
