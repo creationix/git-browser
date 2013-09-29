@@ -12,7 +12,10 @@ function connect(port, host, callback) {
   var ws = new WebSocket(url, "tcp");
   ws.binaryType = 'arraybuffer';
   ws.onopen = function (evt) {
-    callback(null, wrapSocket(ws));
+    ws.onmessage = function (evt) {
+      if (evt.data === "connect") return callback(null, wrapSocket(ws));
+      callback(new Error(evt.data));
+    };
   };
 }
 
@@ -30,13 +33,13 @@ function wrapSocket(ws) {
       var str = "";
       data = new Uint8Array(data);
       for (var i = 0, l = data.length; i < l; i++) {
-        str += String.fromCharCode(data[i]); 
+        str += String.fromCharCode(data[i]);
       }
       queue.push([null, data]);
     }
     return check();
   };
-  
+
   ws.onclose = function (evt) {
     queue.push([]);
     return check();
@@ -55,7 +58,7 @@ function wrapSocket(ws) {
     cb = callback;
     return check();
   }
-  
+
   function check() {
     if (cb && queue.length) {
       var callback = cb;
@@ -63,7 +66,7 @@ function wrapSocket(ws) {
       callback.apply(null, queue.shift());
     }
   }
-  
+
   function abort(callback) {
     if (done) return callback();
     done = true;
@@ -73,7 +76,7 @@ function wrapSocket(ws) {
     try { ws.close(); } catch (err) {}
     callback();
   }
-  
+
   function sink(stream, callback) {
     if (!callback) return sink.bind(this, stream);
     if (source) throw new Error("Already has source");
@@ -81,7 +84,7 @@ function wrapSocket(ws) {
     finish = callback;
     source.read(onRead);
   }
-  
+
   function onRead(err, chunk) {
     if (chunk === undefined) {
       try {
@@ -92,5 +95,5 @@ function wrapSocket(ws) {
     ws.send(chunk);
     source.read(onRead);
   }
-  
+
 }

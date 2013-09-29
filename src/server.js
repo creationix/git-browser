@@ -1,5 +1,6 @@
 var http = require('http');
 var WebSocketServer = require('ws').Server;
+var send = require('send');
 var net = require('net');
 
 var server = http.createServer(onRequest);
@@ -8,18 +9,18 @@ server.listen(8001);
 console.log("HTTP server listening on", server.address());
 
 function onRequest(req, res) {
-  res.statusCode = 200;
-  res.setHeader("Content-Type", "text/plain");
-  res.end("Websocket to TCP Proxy.\nConnect with websocket to /:host/:port");
+  send(req, req.url)
+    .root(__dirname)
+    .pipe(res);
 }
 
 wss.on('connection', function(ws) {
   var req = ws.upgradeReq;
-  // if (req.host !== req.origin) {
-  //   ws.send("Only same origin allowed");
-  //   ws.close();
-  //   return;
-  // }
+  if (req.host !== req.origin) {
+    ws.send("Only same origin allowed");
+    ws.close();
+    return;
+  }
   var match = req.url.match(/^\/([^\/]+)\/([0-9]+)$/);
   if (!match) {
     ws.send("Invalid request url.\nMust be /:host/:port");
@@ -31,6 +32,7 @@ wss.on('connection', function(ws) {
   var port = parseInt(match[2], 10);
   var s = net.connect({host: host, port: port});
   s.on("connect", function () {
+    ws.send("connect");
     console.log("Connected to %s:%s", host, port);
     s.on("error", function (err) {
       try {
@@ -57,7 +59,6 @@ wss.on('connection', function(ws) {
       try {
         ws.close();
       } catch (err) {}
-      console.log("disconnected");
     });
   });
 });
