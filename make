@@ -34,7 +34,10 @@ function zipFile(zip, dir) {
   );
 }
 
-T("web", base("web", WEBDIR));
+T("web", T.parallel(
+  T.copy("src/server.js", WEBDIR + "/server.js"),
+  base("web", WEBDIR)
+));
 
 T("webos", T.parallel(
   base("webos", WEBOSDIR),
