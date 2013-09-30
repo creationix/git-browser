@@ -26,6 +26,7 @@ function add(path) {
       console.error("Warning: Can't find " + name + " relative to " + base);
       return;
     }
+    newPath = newPath.replace(/\\/g, "\\\\");
     var offset = adjust + match.offset;
     var oldLen = name.length;
     code = code.substr(0, offset) + newPath + code.substr(offset + oldLen);
