@@ -1,5 +1,8 @@
 exports.connect = connect;
-function connect(port, host, callback) {
+exports.tcp = { connect: connect.bind(null, "tcp") };
+exports.tls = { connect: connect.bind(null, "tls") };
+
+function connect(protocol, port, host, callback) {
   if (typeof host === "function" && typeof callback === "undefined") {
     callback = host;
     host = "127.0.0.1";
@@ -8,7 +11,7 @@ function connect(port, host, callback) {
   if (typeof port !== "number") throw new TypeError("port must be number");
   if (typeof host !== "string") throw new TypeError("host must be string");
   if (typeof callback !== "function") throw new TypeError("callback must be function");
-  var url = document.location.toString().replace(/^http/, "ws") + host + "/" + port;
+  var url = document.location.toString().replace(/^http/, "ws") + protocol + "/" + host + "/" + port;
   var ws = new WebSocket(url, "tcp");
   ws.binaryType = 'arraybuffer';
   ws.onopen = function (evt) {

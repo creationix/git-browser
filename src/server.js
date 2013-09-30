@@ -2,6 +2,7 @@ var http = require('http');
 var WebSocketServer = require('ws').Server;
 var send = require('send');
 var net = require('net');
+var tls = require('tls');
 
 var server = http.createServer(onRequest);
 var wss = new WebSocketServer({server: server});
@@ -21,17 +22,26 @@ wss.on('connection', function(ws) {
     ws.close();
     return;
   }
-  var match = req.url.match(/^\/([^\/]+)\/([0-9]+)$/);
+  var match = req.url.match(/^\/(tcp|tls)\/([^\/]+)\/([0-9]+)$/);
   if (!match) {
-    ws.send("Invalid request url.\nMust be /:host/:port");
+    ws.send("Invalid request url.\nMust be /:protocol/:host/:port");
     ws.close();
     return;
   }
-  console.log("ws<->tcp Client connected");
-  var host = match[1];
-  var port = parseInt(match[2], 10);
-  var s = net.connect({host: host, port: port});
-  s.on("connect", function () {
+  var protocol = match[1];
+  console.log("ws<->%s Client connected", protocol);
+  var host = match[2];
+  var port = parseInt(match[3], 10);
+  var base = protocol === "tcp" ? net : tls;
+  console.log("Connecting to %s:%s", host, port)
+  var s = base.connect({host: host, port: port}, onConnect);
+  s.on("error", function (err) {
+    try {
+      ws.send(err);
+      ws.close();
+    } catch (err) {}
+  });
+  function onConnect() {
     ws.send("connect");
     console.log("Connected to %s:%s", host, port);
     s.on("error", function (err) {
@@ -60,5 +70,5 @@ wss.on('connection', function(ws) {
         ws.close();
       } catch (err) {}
     });
-  });
+  }
 });

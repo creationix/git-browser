@@ -4,9 +4,10 @@ var repos = {};
 var platform = {
   bops: require('./bops'),
   sha1: require('./sha1.js'),
-  tcp: require('./web-tcp.js'),
-  http: require('./web-http.js'),
+  tcp: require('./web-tcp.js').tcp,
+  tls: require('./web-tcp.js').tls,
 };
+platform.http = require('./pure-http.js')(platform);
 
 // var newDb = require('./git-localdb.js');
 var newDb = require('./git-memdb.js');
@@ -62,7 +63,7 @@ function createRepo(meta, callback) {
   };
   repos[name] = jsGit(newDb(name));
   saveMeta();
-  callback(null, getRepo(name));
+  callback();
 }
 
 function removeRepo(name, callback) {

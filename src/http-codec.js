@@ -1,15 +1,17 @@
-
-var bops = require('./bops');
-
-module.exports = {
-  server: {
-    encoder: serverEncoder,
-    decoder: serverDecoder,
-  },
-  client: {
-    encoder: clientEncoder,
-    decoder: clientDecoder,
-  },
+var bops, HTTP1_1;
+module.exports = function (platform) {
+  bops = platform.bops;
+  HTTP1_1 = bops.from("HTTP/1.1");
+  return {
+    server: {
+      encoder: serverEncoder,
+      decoder: serverDecoder,
+    },
+    client: {
+      encoder: clientEncoder,
+      decoder: clientDecoder,
+    },
+  };
 };
 
 function serverEncoder(write) {
@@ -33,7 +35,7 @@ function clientEncoder(write) {
       head += key + ": " + value + "\r\n";
     });
     head += "\r\n";
-    console.log("HEAD", head)
+    console.log(head)
     if (!req.body) {
       write(bops.from(head));
       return;
@@ -51,11 +53,30 @@ function clientEncoder(write) {
   };
 }
 
-function clientDecoder(emitRes) {
+function clientDecoder(emit) {
+  var position = 0, data = [];
+  var state = $start;
   return function (chunk) {
+    if (chunk === undefined) return emit();
     console.log(chunk);
-    throw "TODO: Implement clientDecoder";
+    for (var i = 0, l = chunk.length; i < l; ++i) {
+      console.log(state.name, i, chunk[i].toString(16), String.fromCharCode(chunk[i]));
+      state = state(chunk[i]);
+    }
   };
+  
+  function $start(byte) {
+    if (byte === HTTP1_1[position++]) return $start;
+    if (byte === 0x20 && position === 9) {
+      position = 0;
+      return $code;
+    }
+    throw new SyntaxError("Must be HTTP/1.1 response");
+  }
+  
+  function $code(byte) {
+    return $code;
+  }
 }
 
 // var states = {
