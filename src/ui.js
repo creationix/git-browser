@@ -2,6 +2,7 @@ exports.push = push;
 exports.pop = pop;
 exports.peer = peer;
 exports.error = error;
+var defer = require('./defer.js');
 
 document.body.textContent = "";
 var pages = [];
@@ -58,6 +59,8 @@ function peer(next) {
 }
 
 function error(err) {
-  // TODO: make a prettier error page
-  alert(err);
+  defer(function () {
+    alert(err);
+  });
+  throw err;
 }

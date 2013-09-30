@@ -8,6 +8,9 @@ var platform = {
   tls: require('./web-tcp.js').tls,
 };
 platform.http = require('./pure-http.js')(platform);
+if (/\btrace\b/.test(document.location.search)) {
+  platform.trace = require('./trace.js');
+}
 
 // var newDb = require('./git-localdb.js');
 var newDb = require('./git-memdb.js');

@@ -3,6 +3,7 @@ var WebSocketServer = require('ws').Server;
 var send = require('send');
 var net = require('net');
 var tls = require('tls');
+var urlParse = require('url').parse;
 
 var server = http.createServer(onRequest);
 var wss = new WebSocketServer({server: server});
@@ -10,7 +11,8 @@ server.listen(8001);
 console.log("HTTP server listening on", server.address());
 
 function onRequest(req, res) {
-  send(req, req.url)
+  var uri = urlParse(req.url);
+  send(req, uri.pathname)
     .root(__dirname)
     .pipe(res);
 }

@@ -11,7 +11,7 @@ function connect(protocol, port, host, callback) {
   if (typeof port !== "number") throw new TypeError("port must be number");
   if (typeof host !== "string") throw new TypeError("host must be string");
   if (typeof callback !== "function") throw new TypeError("callback must be function");
-  var url = document.location.toString().replace(/^http/, "ws") + protocol + "/" + host + "/" + port;
+  var url = (document.location.protocol + "//" + document.location.host + "/").replace(/^http/, "ws") + protocol + "/" + host + "/" + port;
   var ws = new WebSocket(url, "tcp");
   ws.binaryType = 'arraybuffer';
   ws.onopen = function (evt) {
