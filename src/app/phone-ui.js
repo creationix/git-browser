@@ -6,13 +6,17 @@ module.exports = function (backend) {
   ui.push(repoList(backend));
   backend.add({
     name: "creationix/conquest",
-    url: "git://github.com/creationix/conquest.git",
+    url: "https://github.com/creationix/conquest.git",
     description: "A remake of the classic Lords of Conquest for C64 implemented in JavaScript"
   }, check);
   backend.add({
     name: "creationix/jack",
-    url: "https://github.com/creationix/jack.git",
-    description: "Another new language. The name will probably change"
+    url: "git://github.com/creationix/jack.git",
+  }, check);
+  backend.add({
+    name: "creationix/js-git",
+    url: "http://github.com/creationix/js-git.git",
+    description: "A JavaScript implementation of Git."
   }, check);
   function check(err) {
     if (err) throw err;
@@ -43,21 +47,47 @@ function repoList(backend) {
     else {
       icon += "git";
     }
+    var $$ = {};
     var child = domBuilder(
       ["li", { href:"#", onclick: onclick(load, repo) },
         [icon],
         [".icon.right.icon-right-open"],
-        ["button.right", {onclick: onclick(fetch, repo)}, [".icon-download"]],
-        ["button.right", {onclick: onclick(remove, repo)}, [".icon-minus"]],
         ["p", repo.name],
         ["p", repo.description],
         ["p.progress",
-          ["progress"], ["span", "Working..."]
+          ["progress$progress"], ["span$span", "Working..."]
         ],
-      ]
+      ], $$
     );
     children[repo.name] = child;
     $.list.appendChild(child);
+    repo.update = update;
+    repo.remove = remove;
+    return update(onUpdate);
+
+    function onUpdate(err) {
+      if (err) return ui.error(err);
+    }
+
+    function update(callback) {
+      var progress = $$.progress;
+      var span = $$.span;
+      child.classList.add("active");
+      repo.fetch(repo.remote, {
+        onProgress: progressParser(function (message, num, max) {
+          progress.setAttribute("max", max);
+          progress.setAttribute("value", num);
+          span.textContent = message;
+        })
+      }, function (err) {
+        child.classList.remove("active");
+        return callback(err);
+      });
+    }
+
+    function remove(callback) {
+      backend.remove(repo, callback);
+    }
   }
 
   function onRemove(meta) {
@@ -71,36 +101,10 @@ function repoList(backend) {
     $.page.style.opacity = 1;
   }
 
-  function fetch(repo) {
-    var button = this;
-    var li = button.parentNode;
-    var progress = li.querySelector(".progress progress");
-    var span = li.querySelector(".progress span");
-    li.classList.add("active");
-    button.setAttribute("disabled", "disabled");
-    repo.fetch(repo.remote, {
-      onProgress: progressParser(function (message, num, max) {
-        progress.setAttribute("max", max);
-        progress.setAttribute("value", num);
-        span.textContent = message;
-      })
-    }, function (err) {
-      button.setAttribute("disabled", "");
-      li.classList.remove("active");
-      if (err) return ui.error(err);
-    });
-  }
-
   function load(repo) {
     repo.logWalk("HEAD", function (err, stream) {
       if (err) return ui.error(err);
       ui.push(historyList(repo, stream));
-    });
-  }
-
-  function remove(repo) {
-    backend.remove(repo, function (err) {
-      if (err) return ui.error(err);
     });
   }
 
@@ -256,7 +260,6 @@ function commitPage(repo, commit) {
       details.push(["button", {onclick: ascend(parent)}, parent]);
     });
   }
-  console.log(commit);
   details.push(
     ["label", "Author"],
     ["p", commit.author.name + " <" + commit.author.email + "> " + commit.author.date]);
