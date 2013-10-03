@@ -44,11 +44,9 @@ function repoList(backend) {
     );
     children[repo.name] = child;
     $.list.appendChild(child);
-    repo.remove = remove;
-
-    function remove(callback) {
+    repo.remove = function (callback) {
       backend.remove(repo, callback);
-    }
+    };
   }
 
   function onRemove(meta) {
@@ -87,7 +85,11 @@ function repoList(backend) {
     }
 
     function onFetch(err) {
-      if (err) return ui.error(err);
+      if (err) {
+        return repo.remove(function () {
+          return ui.error(err);
+        });
+      }
       var oldChild = child;
       child = domBuilder(
         ["li", { href:"#", onclick: onclick(load, repo) },
