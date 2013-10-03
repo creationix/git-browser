@@ -62,7 +62,12 @@ function localDb(prefix) {
         for (var i = 0, l = deflated.length; i < l; ++i) {
           raw += String.fromCharCode(deflated[i]);
         }
-        localStorage.setItem(prefix + "/" + key, raw);
+        try {
+          localStorage.setItem(prefix + "/" + key, raw);
+        }
+        catch (err) {
+          return callback(err);
+        }
         callback();
       });
     }
