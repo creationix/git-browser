@@ -12,10 +12,16 @@ function makeAsync(fn, callback) {
 
 var deflate, inflate;
 module.exports = function (platform) {
-  deflate = platform.deflate;
-  inflate = platform.inflate;
+  deflate = platform.deflate || fake;
+  inflate = platform.inflate || fake;
   return localDb;
 };
+
+function fake(input, callback) {
+  setImmediate(function () {
+    callback(null, input);
+  });
+}
 
 function localDb(prefix) {
 

@@ -2,8 +2,8 @@
 var platform = {
   bops: require('./lib/bops'),
   sha1: require('./lib/sha1.js'),
-  inflate: require('./lib/inflate.js'),
-  deflate: require('./lib/deflate.js'),
+  // inflate: require('./lib/inflate.js'),
+  // deflate: require('./lib/deflate.js'),
   tcp: require('./lib/web-tcp.js').tcp,
   tls: require('./lib/web-tcp.js').tls,
 };
