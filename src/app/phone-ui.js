@@ -33,7 +33,7 @@ function repoList(backend) {
     }
     var $$ = {};
     var child = domBuilder(
-      ["li$li", { href: "#", onclick: onclick(clone, repo, icon, $$) },
+      ["li$li", { href: "#", onclick: onclick(fetch, repo, icon, $$) },
         [icon],
         ["p", repo.name],
         ["p", repo.description],
@@ -62,19 +62,31 @@ function repoList(backend) {
     $.page.style.opacity = 1;
   }
 
-  function clone(repo, icon, $$) {
+  function fetch(repo, icon, $$) {
     var progress = $$.progress;
     var span = $$.span;
     var child = $$.li;
     pending = repo;
-    child.classList.add("active");
-    repo.fetch(repo.remote, {
-      onProgress: progressParser(function (message, num, max) {
-        progress.setAttribute("max", max);
-        progress.setAttribute("value", num);
-        span.textContent = message;
-      })
-    }, function (err) {
+
+    return repo.getHead(function (err, head) {
+      if (err) return ui.error(err);
+      if (!head) return clone();
+      return onFetch();
+    });
+
+    function clone() {
+      child.classList.add("active");
+      repo.fetch(repo.remote, {
+        onProgress: progressParser(function (message, num, max) {
+          progress.setAttribute("max", max);
+          progress.setAttribute("value", num);
+          span.textContent = message;
+        })
+      }, onFetch);
+
+    }
+
+    function onFetch(err) {
       if (err) return ui.error(err);
       var oldChild = child;
       child = domBuilder(
@@ -89,7 +101,8 @@ function repoList(backend) {
       $$ = null;
       $.list.replaceChild(child, oldChild);
       if (pending === repo) load(repo);
-    });
+    }
+
   }
 
   function load(repo) {

@@ -21,12 +21,18 @@ module.exports = function (git) {
       var meta;
       for (var i = 0, l = metas.length; i < l; ++i) {
         meta = metas[i];
-        if (meta.name !== repo.name) continue;
-        onRemove(meta, i);
-        saveMeta();
-        return callback(null, meta);
+        if (meta.name === repo.name) break;
       }
-      return callback(new Error("Unknown repo name " + repo.name));
+      if (i >= l) {
+        return callback(new Error("Unknown repo name " + repo.name));
+      }
+      metas.splice(i, 1);
+      saveMeta();
+      repo.clear(function (err) {
+        if (err) return callback(err);
+        onRemove(meta, i);
+        return callback(null, meta);
+      });
     },
     init: function (add, remove, callback) {
       onAdd = add;
@@ -41,7 +47,7 @@ module.exports = function (git) {
         return callback(err);
       }
       var left = metas.length;
-      if (!metas.length) return callback();
+      if (!metas.length) return setImmediate(callback);
       var done = false;
       metas.forEach(function (meta) {
         addRepo(meta, check);
@@ -63,6 +69,7 @@ module.exports = function (git) {
   function addRepo(meta, callback) {
     var db = git.db(meta.name);
     var repo = git.repo(db);
+    repo.clear = db.clear;
     var index = metas.length;
     metas[index] = meta;
     repo.remote = git.remote(meta.url);

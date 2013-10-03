@@ -28,19 +28,22 @@ function localDb(prefix) {
   var refs;
   var isHash = /^[a-z0-9]{40}$/;
 
+  prefix += "/";
+
   return {
     get: get,
     set: set,
     has: has,
     del: del,
     keys: keys,
-    init: init
+    init: init,
+    clear: clear
   };
 
   function get(key, callback) {
     if (!callback) return get.bind(this, key);
     if (isHash.test(key)) {
-      var raw = localStorage.getItem(prefix + "/" + key);
+      var raw = localStorage.getItem(prefix + key);
       if (!raw) return;
       var length = raw.length;
       var buffer = new Uint8Array(length);
@@ -63,7 +66,7 @@ function localDb(prefix) {
           raw += String.fromCharCode(deflated[i]);
         }
         try {
-          localStorage.setItem(prefix + "/" + key, raw);
+          localStorage.setItem(prefix + key, raw);
         }
         catch (err) {
           return callback(err);
@@ -79,7 +82,7 @@ function localDb(prefix) {
   function has(key, callback) {
     return makeAsync(function () {
       if (isHash.test(key)) {
-        return !!localStorage.getItem(prefix + "/"+ key);
+        return !!localStorage.getItem(prefix + key);
       }
       return key in refs;
     }, callback);
@@ -88,7 +91,7 @@ function localDb(prefix) {
   function del(key, callback) {
     return makeAsync(function () {
       if (isHash.test(key)) {
-        localStorage.removeItem(prefix + "/" + key);
+        localStorage.removeItem(prefix + key);
       }
       else {
         delete refs[key];
@@ -117,6 +120,19 @@ function localDb(prefix) {
         return;
       }
       refs = JSON.parse(json);
+    }, callback);
+  }
+
+  function clear(callback) {
+    return makeAsync(function () {
+      var length = prefix.length;
+      for (var i = localStorage.length - 1; i >= 0; --i) {
+        var key = localStorage.key(i);
+        if (key.substr(0, length) !== prefix) continue;
+        localStorage.removeItem(key);
+      }
+      refs = {};
+      localStorage.removeItem(prefix);
     }, callback);
   }
 }

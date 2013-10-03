@@ -20,6 +20,7 @@ var backend = require('./app/backend.js')({
   repo: require('js-git')(platform),
   remote: require('git-net')(platform),
   db: require('./lib/git-localdb.js')(platform),
+  // db: require('./lib/git-memdb.js'),
   settings: window.localStorage
 });
 

@@ -5,7 +5,7 @@
   "description": "A git browser app for chrome and firefox",
   "dependencies": {
     "base64-js": "~0.0.2",
-    "js-git": "~0.5.0",
+    "js-git": "~0.5.2",
     "push-to-pull": "~0.1.0",
     "to-utf8": "~0.0.1",
     "varint": "~0.0.3",

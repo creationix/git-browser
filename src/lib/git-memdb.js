@@ -23,7 +23,8 @@ module.exports = function () {
     has: has,
     del: del,
     keys: keys,
-    init: init
+    init: init,
+    clear: init,
   };
 
   function get(key, callback) {
@@ -87,4 +88,5 @@ module.exports = function () {
       others = {};
     }, callback);
   }
+
 };
