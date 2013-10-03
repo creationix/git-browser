@@ -4,27 +4,11 @@ var ui = require('./ui.js');
 
 module.exports = function (backend) {
   ui.push(repoList(backend));
-  backend.add({
-    name: "creationix/conquest",
-    url: "git://github.com/creationix/conquest.git",
-    description: "A remake of the classic Lords of Conquest for C64 implemented in JavaScript"
-  }, check);
-  backend.add({
-    name: "creationix/jack",
-    url: "https://github.com/creationix/jack.git",
-  }, check);
-  backend.add({
-    name: "creationix/js-git",
-    url: "http://github.com/creationix/js-git.git",
-    description: "A JavaScript implementation of Git."
-  }, check);
-  function check(err) {
-    if (err) throw err;
-  }
 };
 
 function repoList(backend) {
   var $ = {};
+  var pending;
   var children = {};
   backend.init(onAdd, onRemove, onReady);
 
@@ -49,7 +33,7 @@ function repoList(backend) {
     }
     var $$ = {};
     var child = domBuilder(
-      ["li.active",
+      ["li$li", { href: "#", onclick: onclick(clone, repo, icon, $$) },
         [icon],
         ["p", repo.name],
         ["p", repo.description],
@@ -62,8 +46,28 @@ function repoList(backend) {
     $.list.appendChild(child);
     repo.remove = remove;
 
+    function remove(callback) {
+      backend.remove(repo, callback);
+    }
+  }
+
+  function onRemove(meta) {
+    var child = children[meta.name];
+    delete children[meta.name];
+    $.list.removeChild(child);
+  }
+
+  function onReady(err) {
+    if (err) return ui.error(err);
+    $.page.style.opacity = 1;
+  }
+
+  function clone(repo, icon, $$) {
     var progress = $$.progress;
     var span = $$.span;
+    var child = $$.li;
+    pending = repo;
+    child.classList.add("active");
     repo.fetch(repo.remote, {
       onProgress: progressParser(function (message, num, max) {
         progress.setAttribute("max", max);
@@ -84,25 +88,12 @@ function repoList(backend) {
       children[repo.name] = child;
       $$ = null;
       $.list.replaceChild(child, oldChild);
+      if (pending === repo) load(repo);
     });
-
-    function remove(callback) {
-      backend.remove(repo, callback);
-    }
-  }
-
-  function onRemove(meta) {
-    var child = children[meta.name];
-    delete children[meta.name];
-    $.list.removeChild(child);
-  }
-
-  function onReady(err) {
-    if (err) return ui.error(err);
-    $.page.style.opacity = 1;
   }
 
   function load(repo) {
+    pending = null;
     repo.logWalk("HEAD", function (err, stream) {
       if (err) return ui.error(err);
       ui.push(historyList(repo, stream));
@@ -244,11 +235,6 @@ function historyList(repo, stream) {
 
   function check() {
     if (reading) return;
-    console.log({
-      otop: end.offsetTop,
-      uHeight: ul.offsetHeight,
-      uTop: ul.scrollTop
-    })
     if (end.offsetTop > ul.offsetHeight + ul.scrollTop) return;
     reading = true;
     stream.read(onRead);

@@ -2,11 +2,9 @@ module.exports = function (git) {
   var metas = [];
   var dirty;
   var onAdd, onRemove;
-  var metaDb = git.db("__meta__");
-  window.metaDb = metaDb;
 
   return {
-    settings: metaDb,
+    settings: git.settings,
     add: function (meta, callback) {
       for (var i = 0, l = metas.length; i < l; ++i) {
         if (metas[i].name === meta.name) {
@@ -15,9 +13,8 @@ module.exports = function (git) {
       }
       addRepo(meta, function (err, repo) {
         if (err) return callback(err);
-        saveMeta(function (err) {
-          return callback(err, repo);
-        });
+        saveMeta();
+        return callback(null, repo);
       });
     },
     remove: function (repo, callback) {
@@ -26,47 +23,38 @@ module.exports = function (git) {
         meta = metas[i];
         if (meta.name !== repo.name) continue;
         onRemove(meta, i);
-        return saveMeta(onSave);
-      }
-      function onSave(err) {
-        return callback(err, meta);
+        saveMeta();
+        return callback(null, meta);
       }
       return callback(new Error("Unknown repo name " + repo.name));
     },
     init: function (add, remove, callback) {
       onAdd = add;
       onRemove = remove;
-      return metaDb.init(onInit);
-      function onInit(err) {
-        if (err) return callback(err);
-        return metaDb.get("metas", onMetas);
+      var json = git.settings.getItem("metas");
+      var metas;
+      if (!json) return setImmediate(callback);
+      try {
+        metas = JSON.parse(json);
       }
-
-      function onMetas(err, json) {
-        var metas;
-        if (!json) return callback();
-        try {
-          metas = JSON.parse(json);
-        }
-        catch (err) {
+      catch (err) {
+        return callback(err);
+      }
+      var left = metas.length;
+      if (!metas.length) return callback();
+      var done = false;
+      metas.forEach(function (meta) {
+        addRepo(meta, check);
+      });
+      function check(err) {
+        if (done) return;
+        if (err) {
+          done = true;
           return callback(err);
         }
-        var left = metas.length;
-        if (!metas.length) return callback();
-        var done = false;
-        metas.forEach(function (meta) {
-          addRepo(meta, check);
-        });
-        function check(err) {
-          if (done) return;
-          if (err) {
-            done = true;
-            return callback(err);
-          }
-          if (!--left) {
-            done = true;
-            return callback();
-          }
+        if (!--left) {
+          done = true;
+          return callback();
         }
       }
     }
@@ -88,20 +76,15 @@ module.exports = function (git) {
     });
   }
 
-  function saveMeta(callback) {
+  function saveMeta() {
     if (dirty) return;
     // Use dirty flag and setImmediate to coalesce many saves in a single tick.
     dirty = true;
     setImmediate(function () {
       dirty = false;
       var json;
-      try {
-        json = JSON.stringify(metas);
-      }
-      catch (err) {
-        return callback(err);
-      }
-      return metaDb.set("metas", json, callback);
+      json = JSON.stringify(metas);
+      git.settings.setItem("metas", json);
     });
   }
 

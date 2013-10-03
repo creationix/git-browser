@@ -17,7 +17,8 @@ if (!window.setImmediate) window.setImmediate = require('./lib/defer.js');
 var backend = require('./app/backend.js')({
   repo: require('js-git')(platform),
   remote: require('git-net')(platform),
-  db: require('./lib/git-memdb.js')
+  db: require('./lib/git-memdb.js'),
+  settings: window.localStorage
 });
 
 // Launch the GUI
