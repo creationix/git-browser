@@ -49,9 +49,8 @@ function repoList(backend) {
     }
     var $$ = {};
     var child = domBuilder(
-      ["li", { href:"#", onclick: onclick(load, repo) },
+      ["li.active",
         [icon],
-        [".icon.right.icon-right-open"],
         ["p", repo.name],
         ["p", repo.description],
         ["p.progress",
@@ -61,29 +60,30 @@ function repoList(backend) {
     );
     children[repo.name] = child;
     $.list.appendChild(child);
-    repo.update = update;
     repo.remove = remove;
-    return update(onUpdate);
 
-    function onUpdate(err) {
+    var progress = $$.progress;
+    var span = $$.span;
+    repo.fetch(repo.remote, {
+      onProgress: progressParser(function (message, num, max) {
+        progress.setAttribute("max", max);
+        progress.setAttribute("value", num);
+        span.textContent = message;
+      })
+    }, function (err) {
       if (err) return ui.error(err);
-    }
-
-    function update(callback) {
-      var progress = $$.progress;
-      var span = $$.span;
-      child.classList.add("active");
-      repo.fetch(repo.remote, {
-        onProgress: progressParser(function (message, num, max) {
-          progress.setAttribute("max", max);
-          progress.setAttribute("value", num);
-          span.textContent = message;
-        })
-      }, function (err) {
-        child.classList.remove("active");
-        return callback(err);
-      });
-    }
+      var oldChild = child;
+      child = domBuilder(
+        ["li", { href:"#", onclick: onclick(load, repo) },
+          [icon],
+          [".icon.right.icon-right-open"],
+          ["p", repo.name],
+          ["p", repo.description]
+        ]
+      );
+      $$ = null;
+      $.list.replaceChild(child, oldChild);
+    });
 
     function remove(callback) {
       backend.remove(repo, callback);
