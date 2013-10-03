@@ -6,12 +6,12 @@ module.exports = function (backend) {
   ui.push(repoList(backend));
   backend.add({
     name: "creationix/conquest",
-    url: "https://github.com/creationix/conquest.git",
+    url: "git://github.com/creationix/conquest.git",
     description: "A remake of the classic Lords of Conquest for C64 implemented in JavaScript"
   }, check);
   backend.add({
     name: "creationix/jack",
-    url: "git://github.com/creationix/jack.git",
+    url: "https://github.com/creationix/jack.git",
   }, check);
   backend.add({
     name: "creationix/js-git",
@@ -179,9 +179,7 @@ function addPage(backend) {
 }
 
 function historyList(repo, stream) {
-  var $ = {};
-  var first = true;
-  var chunkSize = 9;
+  var $ = {}, ul, end, reading = false;
   var root = domBuilder(["section.page",
     ["header",
       ["button", {onclick:onclick(remove)}, [".icon-minus"]],
@@ -190,10 +188,18 @@ function historyList(repo, stream) {
       ["h1", repo.name]
     ],
     ["ul$ul.content.header",
-      ["li$li", "Loading..."]
+      ["li$li", {css:{height: "100px"}}, "Loading..."]
     ]
   ], $);
-  enqueue(true);
+  ul = $.ul;
+  end = $.li;
+  $ = {};
+  ul.addEventListener('scroll', check, false);
+  window.addEventListener('resize', check, false);
+  setImmediate(function () {
+    reading = true;
+    stream.read(onRead);
+  });
   return root;
 
   function remove() {
@@ -210,48 +216,44 @@ function historyList(repo, stream) {
     ui.error("TODO: Implement update");
   }
 
-  function enqueue(isFirst) {
-    first = isFirst;
-    var left = chunkSize;
-    stream.read(onRead);
-    function onRead(err, commit) {
-      if (err) return ui.error(err);
-      if (commit === undefined) {
-        $.ul.removeChild($.li);
-        return;
-      }
-      var title = truncate(commit.message, 80);
-      append(title, commit);
-      if (--left) return stream.read(onRead);
-      appendMore();
-    }
-  }
-
-  function append(title, commit) {
-    var list = [
-      ["li", { href:"#", onclick: onclick(load, commit) },
-        [".icon.right.icon-right-open"],
-        ["p", title],
-        ["p", commit.hash]
-      ],
-      ["li$li", "Loading..."]
-    ];
-    $.ul.removeChild($.li);
-    $.ul.appendChild(domBuilder(list, $));
-    if (!first) $.ul.scrollTop = $.ul.scrollHeight;
-  }
-
-  function appendMore() {
-    var list = ["li$li",{ href:"#", onclick: onclick(enqueue) },
-      ["p", "Load More..."]
-    ];
-    $.ul.removeChild($.li);
-    $.ul.appendChild(domBuilder(list, $));
-  }
-
   function load(commit) {
     ui.push(commitPage(repo, commit));
   }
+
+  function onRead(err, commit) {
+    reading = false;
+    if (err) return ui.error(err);
+    if (commit === undefined) {
+      ul.removeChild(end);
+      end = null;
+      ul.removeEventListener('scroll', check, false);
+      window.removeEventListener('resize', check, false);
+      return;
+    }
+    var title = truncate(commit.message, 80);
+    var item = domBuilder(
+      ["li", { href:"#", onclick: onclick(load, commit) },
+        [".icon.right.icon-right-open", { title: commit.hash }],
+        ["p", title],
+        ["p", commit.author.date]
+      ]
+    );
+    ul.insertBefore(item, end);
+    check();
+  }
+
+  function check() {
+    if (reading) return;
+    console.log({
+      otop: end.offsetTop,
+      uHeight: ul.offsetHeight,
+      uTop: ul.scrollTop
+    })
+    if (end.offsetTop > ul.offsetHeight + ul.scrollTop) return;
+    reading = true;
+    stream.read(onRead);
+  }
+
 }
 
 function commitPage(repo, commit) {
