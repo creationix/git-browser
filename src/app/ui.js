@@ -2,6 +2,7 @@ exports.push = push;
 exports.pop = pop;
 exports.peer = peer;
 exports.error = error;
+exports.confirm = confirm;
 
 document.body.textContent = "";
 var pages = [];
@@ -62,4 +63,8 @@ function error(err) {
     alert(err);
   });
   throw err;
+}
+
+function confirm(message, callback) {
+  callback(window.confirm(message));
 }

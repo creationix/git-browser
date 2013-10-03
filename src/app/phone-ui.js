@@ -81,6 +81,7 @@ function repoList(backend) {
           ["p", repo.description]
         ]
       );
+      children[repo.name] = child;
       $$ = null;
       $.list.replaceChild(child, oldChild);
     });
@@ -183,6 +184,8 @@ function historyList(repo, stream) {
   var chunkSize = 9;
   var root = domBuilder(["section.page",
     ["header",
+      ["button", {onclick:onclick(remove)}, [".icon-minus"]],
+      ["button", {onclick:onclick(update)}, [".icon-download"]],
       ["button.back", {onclick: ui.pop}, [".icon-left-open"]],
       ["h1", repo.name]
     ],
@@ -192,6 +195,20 @@ function historyList(repo, stream) {
   ], $);
   enqueue(true);
   return root;
+
+  function remove() {
+    ui.confirm("Are you sure you want to delete this local repo?", function (res) {
+      if (!res) return;
+      repo.remove(function (err) {
+        if (err) return ui.error(err);
+        ui.pop();
+      });
+    });
+  }
+
+  function update() {
+    ui.error("TODO: Implement update");
+  }
 
   function enqueue(isFirst) {
     first = isFirst;
