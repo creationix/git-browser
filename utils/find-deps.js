@@ -68,7 +68,9 @@ function localResolve(path) {
   if (fs.existsSync(packagePath)) {
     var json = fs.readFileSync(packagePath);
     var meta = JSON.parse(json);
-    if (meta.main) return add(pathJoin(path, meta.main));
+    if (meta.main) {
+      return localResolve(pathJoin(path, meta.main));
+    }
   }
   var indexPath = pathJoin(path, "index.js");
   if (fs.existsSync(indexPath)) {
@@ -99,7 +101,7 @@ exports.build = function (source, callback) {
   catch (err) {
     return callback(err);
   }
-  var code = "(function (realRequire) {" + indent(codes.join("\n\n")) + "}(typeof require === 'function' ? require : undefined));";
+  var code = "(function (realRequire) {" + indent(codes.join("\n\n")) + "}(typeof require === 'function' ? require : console.error.bind(console, 'Missing Module')));";
   callback(null, code);
 };
 
