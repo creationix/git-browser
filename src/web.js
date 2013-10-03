@@ -1,77 +1,25 @@
-var repoMeta;
-var repos = {};
-
+// Configure the platform
 var platform = {
-  bops: require('./bops'),
-  sha1: require('./sha1.js'),
-  tcp: require('./web-tcp.js').tcp,
-  tls: require('./web-tcp.js').tls,
+  bops: require('./lib/bops'),
+  sha1: require('./lib/sha1.js'),
+  tcp: require('./lib/web-tcp.js').tcp,
+  tls: require('./lib/web-tcp.js').tls,
 };
-platform.http = require('./pure-http.js')(platform);
+platform.http = require('./lib/pure-http.js')(platform);
 if (/\btrace\b/.test(document.location.search)) {
-  platform.trace = require('./trace.js');
+  platform.trace = require('./lib/trace.js');
 }
 
-// var newDb = require('./git-localdb.js');
-var newDb = require('./git-memdb.js');
-var jsGit = require('js-git')(platform);
+// Polyfill setImmediate
+if (!window.setImmediate) window.setImmediate = require('./lib/defer.js');
 
-loadMeta();
-
-require('./main.js')({
+// Configure the backend
+var backend = require('./app/backend.js')({
+  repo: require('js-git')(platform),
   remote: require('git-net')(platform),
-  listRepos: listRepos,
-  createRepo: createRepo,
-  removeRepo: removeRepo
+  db: require('./lib/git-memdb.js')
 });
 
-function getRepo(name) {
-  var meta = repoMeta[name];
-  var repo = repos[name];
-  if (!repo) {
-    repo = repos[name] = jsGit(newDb(name));
-  }
-  repo.name = name;
-  repo.url = meta.url;
-  repo.description = meta.description;
-  return repo;
-}
+// Launch the GUI
+require('./app/phone-ui.js')(backend);
 
-function loadMeta() {
-  var saved = localStorage.getItem("_meta");
-  if (saved) {
-    repoMeta = JSON.parse(saved);
-  }
-  else {
-    repoMeta = {};
-  }
-}
-
-function saveMeta() {
-  localStorage.setItem("_meta", JSON.stringify(repoMeta));
-}
-
-function listRepos(callback) {
-  callback(null, Object.keys(repoMeta).map(getRepo));
-}
-
-function createRepo(meta, callback) {
-  var name = meta.name;
-  if (name in repoMeta) {
-    return callback(new Error(name + " already exists.  Choose a new name"));
-  }
-  repoMeta[name] = {
-    url: meta.url,
-    description: meta.description
-  };
-  repos[name] = jsGit(newDb(name));
-  saveMeta();
-  callback();
-}
-
-function removeRepo(name, callback) {
-  delete repos[name];
-  delete repoMeta[name];
-  saveMeta();
-  callback();
-}

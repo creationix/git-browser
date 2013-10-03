@@ -2,7 +2,6 @@ exports.push = push;
 exports.pop = pop;
 exports.peer = peer;
 exports.error = error;
-var defer = require('./defer.js');
 
 document.body.textContent = "";
 var pages = [];
@@ -59,7 +58,7 @@ function peer(next) {
 }
 
 function error(err) {
-  defer(function () {
+  setImmediate(function () {
     alert(err);
   });
   throw err;

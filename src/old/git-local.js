@@ -33,6 +33,7 @@ module.exports = function () {
 
 
   function has(hash, callback) {
+    if (!callback) return has.bind(this, hash);
     defer(function () {
       callback(null, hash in db);
     });
@@ -45,6 +46,7 @@ module.exports = function () {
   }
 
   function readdir(target, callback) {
+    if (!callback) return readdir.bind(this, target);
     var items = Object.keys(db).filter(function (key) {
       return key.substr(0, target.length) === target;
     }).map(function (key) {
