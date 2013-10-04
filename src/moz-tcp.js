@@ -5,7 +5,7 @@ module.exports = {
   tls: { connect: connect.bind(null, true) },
 };
 
-function connect(tls, port, host, callback) {
+function connect(useSSL, port, host, callback) {
   if (typeof host === "function" && typeof callback === "undefined") {
     callback = host;
     host = "127.0.0.1";
@@ -15,7 +15,7 @@ function connect(tls, port, host, callback) {
   if (typeof host !== "string") throw new TypeError("host must be string");
   if (typeof callback !== "function") throw new TypeError("callback must be function");
 
-  var socket = TCPSocket.open(host, port, { binaryType: "arraybuffer", ssl: tls });
+  var socket = TCPSocket.open(host, port, { binaryType: "arraybuffer", useSSL: useSSL });
 
   socket.onopen = function () {
     socket.onopen = null;
