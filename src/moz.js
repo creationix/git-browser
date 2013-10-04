@@ -3,12 +3,12 @@ var platform = {
   tcp: require('./moz-tcp.js').tcp,
   tls: require('./moz-tcp.js').tls,
   bops: require('./lib/bops'),
-  sha1: require('./lib/sha1.js'),
-  // inflate: require('./lib/inflate.js'),
-  // deflate: require('./lib/deflate.js'),
+  sha1: require('git-sha1'),
+  // inflate: require('git-zlib/inflate.js'),
+  // deflate: require('git-zlib/deflate.js'),
   // trace: require('./trace.js'),
 };
-platform.http = require('./lib/pure-http.js')(platform);
+platform.http = require('git-http')(platform);
 
 // Polyfill setImmediate
 if (!window.setImmediate) window.setImmediate = require('./lib/defer.js');
@@ -17,8 +17,8 @@ if (!window.setImmediate) window.setImmediate = require('./lib/defer.js');
 var backend = require('./app/backend.js')({
   repo: require('js-git')(platform),
   remote: require('git-net')(platform),
-  db: require('./lib/git-localdb.js')(platform),
-  // db: require('./lib/git-memdb.js'),
+  db: require('git-localdb')(platform),
+  // db: require('git-memdb'),
   settings: { get: get, set: set },
 });
 

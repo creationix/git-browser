@@ -12,7 +12,13 @@
     "domlog": "0.0.9",
     "dombuilder": "~0.1.2",
     "git-fs-db": "~0.1.1",
-    "git-net": "0.0.3"
+    "git-net": "~0.0.4",
+    "git-localdb": "~0.1.0",
+    "git-memdb": "~0.3.0",
+    "git-sha1": "~0.1.0",
+    "git-zlib": "~0.1.0",
+    "websocket-tcp-client": "~0.1.0",
+    "git-http": "~0.1.0"
   },
   "devDependencies": {
     "tim-task": "~0.1.0",

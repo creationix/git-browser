@@ -3,13 +3,13 @@
 // Configure the platform
 var platform = {
   tcp: require('./lib/chrome-tcp.js'),
-  sha1: require('./lib/sha1.js'),
+  sha1: require('git-sha1'),
   bops: require('./lib/bops/index.js'),
-  // inflate: require('./lib/inflate.js'),
-  // deflate: require('./lib/deflate.js'),
+  // inflate: require('git-zlib/inflate.js'),
+  // deflate: require('git-zlib/deflate.js'),
   // trace: require('./trace.js'),
 };
-platform.http = require('./lib/pure-http.js')(platform);
+platform.http = require('git-http')(platform);
 
 // Polyfill setImmediate
 if (!window.setImmediate) window.setImmediate = require('./lib/defer.js');
