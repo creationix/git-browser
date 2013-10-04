@@ -99,8 +99,10 @@ function repoList(backend) {
       child.classList.add("active");
       repo.fetch(repo.remote, {
         onProgress: progressParser(function (message, num, max) {
-          progress.setAttribute("max", max);
-          progress.setAttribute("value", num);
+          if (max) {
+            progress.setAttribute("max", max);
+            progress.setAttribute("value", num);
+          }
           span.textContent = message;
         })
       }, onFetch);
