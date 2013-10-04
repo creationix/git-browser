@@ -160,7 +160,7 @@ function addPage(backend) {
     ["form.content.header", {onsubmit: submit},
       ["label", {"for": "url"}, "Remote Url"],
       ["input", {
-        type: "text",
+        type: "url",
         name: "url",
         placeholder: "Enter git url here",
         value: "git://github.com/creationix/conquest.git",
