@@ -21,7 +21,7 @@ var modes = {
   coffeescript: /\.(?:cs|coffee)$/i,
 };
 
-var isText = /\.(?:markdown|md|txt|html|svg|xml)$/i;
+var isText = /(?:\.(?:markdown|md|txt|html|svg|xml)|^(?:LICENSE|README|\.gitignore))$/i;
 
 var isImage = /\.(?:png|jpg|jpeg|gif)$/i;
 

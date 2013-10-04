@@ -53,8 +53,7 @@
 }
 [data-position="right"] {
   &.right {
-    transform: translateX(-100%);
-    -webkit-transform: translateX(-100%);
+    display: none;
   }
   &.current {
     animation: rightToCurrent 0.4s forwards;
@@ -66,8 +65,7 @@
 
 [data-position="left"] {
   &.left {
-    transform: translateX(100%);
-    -webkit-transform: translateX(100%);
+    display: none;
   }
   &.current {
     animation: leftToCurrent 0.4s forwards;

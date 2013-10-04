@@ -21,8 +21,16 @@ var backend = require('./app/backend.js')({
   remote: require('git-net')(platform),
   db: require('./lib/git-localdb.js')(platform),
   // db: require('./lib/git-memdb.js'),
-  settings: window.localStorage
+  settings: { get: get, set: set },
 });
+
+function get(key) {
+  return JSON.parse(window.localStorage.getItem(key));
+}
+
+function set(key, value) {
+  window.localStorage.setItem(key, JSON.stringify(value));
+}
 
 // Launch the GUI
 require('./app/phone-ui.js')(backend);

@@ -37,15 +37,8 @@ module.exports = function (git) {
     init: function (add, remove, callback) {
       onAdd = add;
       onRemove = remove;
-      var json = git.settings.getItem("metas");
-      var metas;
-      if (!json) return setImmediate(callback);
-      try {
-        metas = JSON.parse(json);
-      }
-      catch (err) {
-        return callback(err);
-      }
+      var metas = git.settings.get("metas");
+      if (!metas) return setImmediate(callback);
       var left = metas.length;
       if (!metas.length) return setImmediate(callback);
       var done = false;
@@ -89,9 +82,7 @@ module.exports = function (git) {
     dirty = true;
     setImmediate(function () {
       dirty = false;
-      var json;
-      json = JSON.stringify(metas);
-      git.settings.setItem("metas", json);
+      git.settings.set("metas", metas);
     });
   }
 

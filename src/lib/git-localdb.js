@@ -28,8 +28,6 @@ function localDb(prefix) {
   var refs;
   var isHash = /^[a-z0-9]{40}$/;
 
-  prefix += "/";
-
   return {
     get: get,
     set: set,
@@ -43,7 +41,7 @@ function localDb(prefix) {
   function get(key, callback) {
     if (!callback) return get.bind(this, key);
     if (isHash.test(key)) {
-      var raw = localStorage.getItem(prefix + key);
+      var raw = localStorage.getItem(key);
       if (!raw) return;
       var length = raw.length;
       var buffer = new Uint8Array(length);
@@ -66,7 +64,7 @@ function localDb(prefix) {
           raw += String.fromCharCode(deflated[i]);
         }
         try {
-          localStorage.setItem(prefix + key, raw);
+          localStorage.setItem(key, raw);
         }
         catch (err) {
           return callback(err);
@@ -82,7 +80,7 @@ function localDb(prefix) {
   function has(key, callback) {
     return makeAsync(function () {
       if (isHash.test(key)) {
-        return !!localStorage.getItem(prefix + key);
+        return !!localStorage.getItem(key);
       }
       return key in refs;
     }, callback);
@@ -91,7 +89,7 @@ function localDb(prefix) {
   function del(key, callback) {
     return makeAsync(function () {
       if (isHash.test(key)) {
-        localStorage.removeItem(prefix + key);
+        localStorage.removeItem(key);
       }
       else {
         delete refs[key];
@@ -125,14 +123,11 @@ function localDb(prefix) {
 
   function clear(callback) {
     return makeAsync(function () {
-      var length = prefix.length;
-      for (var i = localStorage.length - 1; i >= 0; --i) {
-        var key = localStorage.key(i);
-        if (key.substr(0, length) !== prefix) continue;
-        localStorage.removeItem(key);
-      }
       refs = {};
       localStorage.removeItem(prefix);
+      // We don't know all the hashes that were used by only this database
+      // so just kill everything so save space.
+      localStorage.clear();
     }, callback);
   }
 }
