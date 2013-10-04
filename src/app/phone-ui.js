@@ -97,13 +97,16 @@ function repoList(backend) {
 
     function clone() {
       child.classList.add("active");
+      var old;
       repo.fetch(repo.remote, {
         onProgress: progressParser(function (message, num, max) {
           if (max) {
             progress.setAttribute("max", max);
             progress.setAttribute("value", num);
           }
-          span.textContent = message;
+          if (message !== old) {
+            span.textContent = old = message;
+          }
         })
       }, onFetch);
 
