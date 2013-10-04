@@ -1,5 +1,6 @@
 @import "transitions.less";
 @import "icons.less";
+@import "prism.css";
 
 *, *:before, *:after {
   -moz-box-sizing: border-box;
@@ -20,6 +21,11 @@ body, .content, .page {
   right: 0;
   top: 0;
   bottom: 0;
+}
+
+code {
+  font-size: 1.5rem;
+  line-height: 1.8rem;
 }
 
 .page (@top, @bottom) {

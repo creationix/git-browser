@@ -1,6 +1,29 @@
 var domBuilder = require('dombuilder');
 var progressParser = require('../lib/progress-parser.js');
 var ui = require('./ui.js');
+var prism = require('../prism/prism-core.js');
+require('../prism/prism-javascript.js');
+require('../prism/prism-c.js');
+require('../prism/prism-bash.js');
+require('../prism/prism-coffeescript.js');
+require('../prism/prism-cpp.js');
+require('../prism/prism-css-extras.js');
+require('../prism/prism-markup.js');
+
+// Patterns for different language mode names.
+var modes = {
+  javascript: /\.(?:js|json|webapp)$/i,
+  css: /\.(?:css|less)$/i,
+  // markup: /\.(?:xml|html|svg)$/i,
+  bash: /\.sh$/i,
+  c: /\.(?:h|c)$/i,
+  cpp: /\.(?:cpp|cxx|hxx|h)$/i,
+  coffeescript: /\.(?:cs|coffee)$/i,
+};
+
+var isText = /\.(?:markdown|md|txt|html|svg|xml)$/i;
+
+var isImage = /\.(?:png|jpg|jpeg|gif)$/i;
 
 module.exports = function (backend) {
   ui.push(repoList(backend));
@@ -323,14 +346,36 @@ function filesList(repo, tree) {
     ],
     ["ul.content.header", tree.map(function (file) {
       var icon = ".icon.left.icon-";
+      var action;
       if (file.mode === 16384) {
         icon += "folder-empty";
+        action = enterFolder;
+      }
+      else if (isImage.test(file.name)) {
+        icon += "picture";
+        action = loadImage;
+      }
+      else if (isText.test(file.name)) {
+        icon += "doc-text";
+        action = loadText;
       }
       else {
-        icon += "doc";
+        var names = Object.keys(modes);
+        for (var i = 0, l = names.length; i < l; ++i) {
+          var name = names[i];
+          var regexp = modes[name];
+          if (regexp.test(file.name)) {
+            icon += "doc-text";
+            action = loadCode.bind(null, name);
+            break;
+          }
+        }
       }
-
-      return ["li", { href:"#", onclick: onclick(load, file) },
+      if (!action) {
+        icon += "doc";
+        action = load;
+      }
+      return ["li", { href:"#", onclick: onclick(action, file) },
         [icon],
         (file.mode === 16384 ? [".icon.right.icon-right-open"] : []),
         ["p", file.name],
@@ -338,16 +383,93 @@ function filesList(repo, tree) {
       ];
     })]
   ]);
+
+  function enterFolder(file) {
+    return repo.loadAs("tree", file.hash, function (err, tree) {
+      if (err) return ui.error(err);
+      ui.push(filesList(repo, tree));
+    });
+  }
+
+  function loadImage(file) {
+    return repo.loadAs("blob", file.hash, function (err, blob) {
+      if (err) return ui.error(err);
+      ui.push(imagePage(file.name, blob));
+    });
+  }
+
+  function loadCode(language, file) {
+    return repo.loadAs("blob", file.hash, function (err, blob) {
+      if (err) return ui.error(err);
+      ui.push(codePage(file.name, blob, language));
+    });
+  }
+
+  function loadText(file) {
+    return repo.loadAs("blob", file.hash, function (err, blob) {
+      if (err) return ui.error(err);
+      ui.push(textPage(file.name, blob));
+    });
+  }
+
   function load(file) {
-    if (file.mode === 16384) {
-      return repo.loadAs("tree", file.hash, function (err, tree) {
-        if (err) return ui.error(err);
-        ui.push(filesList(repo, tree));
-      });
-    }
     console.log("TODO: load file");
   }
 }
+
+function codePage(filename, blob, language) {
+  var code = "";
+  for (var i = 0, l = blob.length; i < l; ++i) {
+    code += String.fromCharCode(blob[i]);
+  }
+  var body = prism.parse(code, language);
+  body[0] += ".content.header";
+
+  return domBuilder(["section.page",
+    ["header",
+      ["button.back", {onclick: ui.pop}, [".icon-left-open"]],
+      ["h1", filename]
+    ],
+    body
+  ]);
+}
+
+function textPage(filename, blob) {
+  var text = "";
+  for (var i = 0, l = blob.length; i < l; ++i) {
+    text += String.fromCharCode(blob[i]);
+  }
+  return domBuilder(["section.page",
+    ["header",
+      ["button.back", {onclick: ui.pop}, [".icon-left-open"]],
+      ["h1", filename]
+    ],
+    ["pre.content.header", {css: {
+      padding: "1rem",
+      whiteSpace:"pre-wrap"
+    }},
+      ["code", text]
+    ]
+  ]);
+}
+
+function imagePage(filename, blob) {
+  blob = new Blob([blob]);
+  var url = window.URL.createObjectURL(blob);
+  return domBuilder(["section.page",
+    ["header",
+      ["button.back", {onclick: ui.pop}, [".icon-left-open"]],
+      ["h1", filename],
+    ],
+    [".content.header", {css:{
+      backgroundImage: "url(" + url + ")",
+      backgroundSize: "contain",
+      backgroundRepeat: "no-repeat",
+      backgroundPosition: "center"
+    }}]
+  ]);
+}
+
 
 function truncate(message, limit) {
   var title = message.split(/[\r\n]/)[0];
