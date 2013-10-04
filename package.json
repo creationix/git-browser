@@ -15,7 +15,9 @@
     "git-net": "0.0.3"
   },
   "devDependencies": {
-    "less": "~1.4.2"
+    "tim-task": "~0.1.0",
+    "send": "~0.1.4",
+    "ws": "~0.4.31"
   },
   "repository": {
     "type": "git",

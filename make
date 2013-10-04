@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var T = require('./utils/task.js');
+var T = require('tim-task');
 var path = require('path');
 
 // Override paths using environment variables
