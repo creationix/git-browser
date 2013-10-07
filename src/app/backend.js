@@ -30,6 +30,7 @@ module.exports = function (git) {
       saveMeta();
       repo.clear(function (err) {
         if (err) return callback(err);
+        saveMeta();
         onRemove(meta, i);
         return callback(null, meta);
       });
