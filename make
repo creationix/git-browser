@@ -36,7 +36,7 @@ function zipFile(zip, dir) {
 
 T("web", T.parallel(
   T.copy("src/server.js", WEBDIR + "/server.js"),
-  T.copy("src/git-browser.appcache", WEBDIR + "git-browser.appcache"),
+  T.copy("src/git-browser.appcache", WEBDIR + "/git-browser.appcache"),
   base("web", WEBDIR)
 ));
 
