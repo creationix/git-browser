@@ -18,7 +18,7 @@
     "git-sha1": "~0.1.0",
     "git-zlib": "~0.1.0",
     "websocket-tcp-client": "~0.1.0",
-    "git-http": "~0.1.0"
+    "git-http": "~0.1.1"
   },
   "devDependencies": {
     "tim-task": "~0.1.0",
