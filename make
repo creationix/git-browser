@@ -4,6 +4,7 @@ var path = require('path');
 
 // Override paths using environment variables
 var WEBDIR = process.env.WEBDIR || "build/web";
+var WEBIDBDIR = process.env.WEBDIR || "build/web-idb";
 var MOZDIR = process.env.MOZDIR || "build/moz";
 var CHROMEDIR = process.env.CHROMEDIR || "build/chrome";
 var WEBOSDIR = process.env.WEBOSDIR || "build/webos";
@@ -11,7 +12,7 @@ var MOZZIP = MOZDIR + "-app.zip";
 var CHROMEZIP = CHROMEDIR + "-app.zip";
 var IPK = "build/com.creationix.git-browser_0.0.1_all.ipk";
 
-T("code", ["web", "moz", "chrome"]);
+T("code", ["web", "web-idb", "moz", "chrome"]);
 
 T("all", ["code", "moz-zip", "chrome-zip"]);
 
@@ -38,6 +39,12 @@ T("web", T.parallel(
   T.copy("src/server.js", WEBDIR + "/server.js"),
   T.copy("src/git-browser.appcache", WEBDIR + "/git-browser.appcache"),
   base("web", WEBDIR)
+));
+
+T("web-idb", T.parallel(
+  T.copy("src/server.js", WEBIDBDIR + "/server.js"),
+  T.copy("src/git-browser.appcache", WEBIDBDIR + "/git-browser.appcache"),
+  base("web-idb", WEBIDBDIR)
 ));
 
 T("webos", T.parallel(
