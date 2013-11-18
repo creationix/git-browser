@@ -47,19 +47,6 @@ T("web", T.serial(
   ], "git-browser.appcache")
 ));
 
-T("web-localstorage", T.serial(
-  T.parallel(
-    T.copy("src/server.js", WEBDIR + "/server.js"),
-    base("web-localstorage", WEBDIR)
-  ),
-  T.manifest(WEBDIR, [
-    "index.html",
-    "style.css",
-    "app.js",
-    "prism.css"
-  ], "git-browser.appcache")
-));
-
 T("webos", T.parallel(
   base("webos", WEBOSDIR),
   T.copy("src/appinfo.json", WEBOSDIR + "/appinfo.json")
