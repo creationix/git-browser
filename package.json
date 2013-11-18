@@ -5,7 +5,7 @@
   "description": "A git browser app for chrome and firefox",
   "dependencies": {
     "base64-js": "~0.0.2",
-    "js-git": "~0.5.2",
+    "js-git": "~0.6.1",
     "push-to-pull": "~0.1.0",
     "to-utf8": "~0.0.1",
     "varint": "~0.0.3",
@@ -19,7 +19,8 @@
     "git-zlib": "~0.1.0",
     "websocket-tcp-client": "~0.1.0",
     "git-http": "~0.1.1",
-    "git-indexeddb": "~0.1.0"
+    "git-indexeddb": "~0.1.0",
+    "bops": "~0.1.0"
   },
   "devDependencies": {
     "tim-task": "~0.1.0",

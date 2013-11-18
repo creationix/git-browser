@@ -12,7 +12,7 @@ var MOZZIP = MOZDIR + "-app.zip";
 var CHROMEZIP = CHROMEDIR + "-app.zip";
 var IPK = "build/com.creationix.git-browser_0.0.1_all.ipk";
 
-T("code", ["web", "web-idb", "moz", "chrome"]);
+T("code", ["web", "moz", "chrome"]);
 
 T("all", ["code", "moz-zip", "chrome-zip"]);
 
@@ -37,14 +37,24 @@ function zipFile(zip, dir) {
 
 T("web", T.parallel(
   T.copy("src/server.js", WEBDIR + "/server.js"),
-  T.copy("src/git-browser.appcache", WEBDIR + "/git-browser.appcache"),
+  T.manifest(WEBDIR, [
+    "index.html",
+    "style.css",
+    "app.js",
+    "prism.css"
+  ], "git-browser.appcache"),
   base("web", WEBDIR)
 ));
 
-T("web-idb", T.parallel(
+T("web-localstorage", T.parallel(
   T.copy("src/server.js", WEBIDBDIR + "/server.js"),
-  T.copy("src/git-browser.appcache", WEBIDBDIR + "/git-browser.appcache"),
-  base("web-idb", WEBIDBDIR)
+  T.manifest(WEBDIR, [
+    "index.html",
+    "style.css",
+    "app.js",
+    "prism.css"
+  ], "git-browser.appcache"),
+  base("web-localstorage", WEBIDBDIR)
 ));
 
 T("webos", T.parallel(

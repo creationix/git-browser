@@ -1,6 +1,6 @@
 /*global chrome*/
 var socket = chrome.socket;
-var bops = require('./bops/index.js');
+var bops = require('bops');
 
 exports.connect = connect;
 function connect(port, host, callback) {

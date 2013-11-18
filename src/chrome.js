@@ -4,7 +4,7 @@
 var platform = {
   tcp: require('./lib/chrome-tcp.js'),
   sha1: require('git-sha1'),
-  bops: require('./lib/bops/index.js'),
+  bops: require('bops'),
   // inflate: require('git-zlib/inflate.js'),
   // deflate: require('git-zlib/deflate.js'),
   // trace: require('./trace.js'),
@@ -16,9 +16,10 @@ if (!window.setImmediate) window.setImmediate = require('./lib/defer.js');
 
 // Configure the backend
 var backend = require('./app/backend.js')({
-  repo: require('js-git')(platform),
+  repo: require('js-git'),
   remote: require('git-net')(platform),
-  db: require('./lib/git-chrome-localdb.js')(platform),
+  db: require('git-indexeddb')(platform),
+  // db: require('./lib/git-chrome-localdb.js')(platform),
   // db: require('./lib/git-memdb.js'),
   settings: { get: get, set: set },
 });
