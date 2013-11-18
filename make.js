@@ -4,7 +4,6 @@ var path = require('path');
 
 // Override paths using environment variables
 var WEBDIR = process.env.WEBDIR || "build/web";
-var WEBIDBDIR = process.env.WEBDIR || "build/web-idb";
 var MOZDIR = process.env.MOZDIR || "build/moz";
 var CHROMEDIR = process.env.CHROMEDIR || "build/chrome";
 var WEBOSDIR = process.env.WEBOSDIR || "build/webos";
@@ -35,26 +34,30 @@ function zipFile(zip, dir) {
   );
 }
 
-T("web", T.parallel(
-  T.copy("src/server.js", WEBDIR + "/server.js"),
+T("web", T.serial(
+  T.parallel(
+    T.copy("src/server.js", WEBDIR + "/server.js"),
+    base("web", WEBDIR)
+  ),
   T.manifest(WEBDIR, [
     "index.html",
     "style.css",
     "app.js",
     "prism.css"
-  ], "git-browser.appcache"),
-  base("web", WEBDIR)
+  ], "git-browser.appcache")
 ));
 
-T("web-localstorage", T.parallel(
-  T.copy("src/server.js", WEBIDBDIR + "/server.js"),
+T("web-localstorage", T.serial(
+  T.parallel(
+    T.copy("src/server.js", WEBDIR + "/server.js"),
+    base("web-localstorage", WEBDIR)
+  ),
   T.manifest(WEBDIR, [
     "index.html",
     "style.css",
     "app.js",
     "prism.css"
-  ], "git-browser.appcache"),
-  base("web-localstorage", WEBIDBDIR)
+  ], "git-browser.appcache")
 ));
 
 T("webos", T.parallel(
