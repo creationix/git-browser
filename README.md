@@ -11,7 +11,7 @@ Browse Git Repos offline.
 git clone git@github.com:creationix/git-browser.git
 cd git-browser
 npm install
-./make moz
+node make.js moz
 ```
 
 Then add `build/moz/manifest.webapp` to the simulator and push it to a device.
@@ -22,7 +22,7 @@ Then add `build/moz/manifest.webapp` to the simulator and push it to a device.
 git clone git@github.com:creationix/git-browser.git
 cd git-browser
 npm install
-./make chrome
+node make.js chrome
 ```
 
 Then go to <chrome://extensions/> and "Load unpacked extension..." and browse to `build/chrome`.
@@ -35,7 +35,7 @@ This builds a web app that can run in a normal hosted webpage
 git clone git@github.com:creationix/git-browser.git
 cd git-browser
 npm install
-./make web
+node make.js web
 ```
 
 Then point your browser to `build/web/index.html`.
